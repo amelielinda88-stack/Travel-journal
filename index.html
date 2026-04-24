@@ -1,0 +1,1099 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f7f3ee">
+<title>旅 · Travel Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Noto+Serif+JP:wght@300;400;500&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#f7f3ee;--cream2:#efe9e0;--cream3:#e8dfd3;
+  --ink:#2a2118;--ink2:#5c4f42;--ink3:#9c8b7a;
+  --line:rgba(92,79,66,0.15);--red:#c0392b;
+  --sage:#7a9e7e;--sage2:#d4e8d5;--dusty:#b5a49a;
+  --gold:#c9a84c;--gold2:#f5e6c0;
+  --shadow:rgba(42,33,24,0.10);--shadow2:rgba(42,33,24,0.18);
+  --tab-h:64px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Serif JP',serif;background:var(--cream);color:var(--ink);min-height:100dvh;overflow-x:hidden;padding-bottom:var(--tab-h)}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;opacity:0.6;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E")}
+
+/* VIEWS */
+.view{display:none;min-height:calc(100dvh - var(--tab-h))}.view.active{display:block}
+
+/* WASHI */
+.washi{display:block;height:20px;width:100%;position:relative;overflow:hidden}
+.washi::before{content:'';position:absolute;inset:0}
+.washi-sage::before{background-color:rgba(122,158,126,0.45);background-image:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(255,255,255,0.3) 8px,rgba(255,255,255,0.3) 9px)}
+.washi-dusty::before{background-color:rgba(181,164,154,0.5);background-image:repeating-linear-gradient(90deg,transparent,transparent 6px,rgba(255,255,255,0.25) 6px,rgba(255,255,255,0.25) 7px)}
+.washi-red::before{background-color:rgba(192,57,43,0.22);background-image:repeating-linear-gradient(90deg,transparent,transparent 10px,rgba(255,255,255,0.2) 10px,rgba(255,255,255,0.2) 11px)}
+.washi-gold::before{background-color:rgba(201,168,76,0.35);background-image:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(255,255,255,0.25) 8px,rgba(255,255,255,0.25) 9px)}
+
+/* TAB BAR */
+.tab-bar{position:fixed;bottom:0;left:0;right:0;height:var(--tab-h);background:var(--cream);border-top:1px solid var(--line);display:flex;align-items:stretch;box-shadow:0 -4px 20px var(--shadow);z-index:200}
+.tab-item{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:none;background:none;cursor:pointer;padding:6px 2px;color:var(--ink3);transition:all 0.15s}
+.tab-item.active{color:var(--ink)}
+.tab-icon{font-size:20px;line-height:1;transition:transform 0.15s}
+.tab-item.active .tab-icon{transform:scale(1.15)}
+.tab-label{font-size:9px;font-weight:700;letter-spacing:0.5px;text-transform:uppercase;font-family:'Caveat',cursive}
+
+/* PAGE HEADER */
+.page-header{background:var(--cream);padding:0;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--line),0 4px 12px var(--shadow)}
+.page-header-inner{display:flex;align-items:center;justify-content:space-between;padding:13px 16px 11px}
+.page-title{font-family:'Zen Antique',serif;font-size:20px;color:var(--ink);letter-spacing:2px}
+.page-title span{font-family:'Caveat',cursive;font-size:12px;color:var(--ink3);display:block;letter-spacing:1px;margin-top:2px;font-weight:400}
+.header-btn{background:var(--ink);color:var(--cream);border:none;border-radius:2px;padding:9px 16px;font-family:'Caveat',cursive;font-size:15px;font-weight:600;cursor:pointer;box-shadow:2px 2px 0 var(--ink2);transition:all 0.15s;white-space:nowrap}
+.header-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink2)}
+.header-btn.ghost{background:none;color:var(--ink2);box-shadow:none;border:1px solid var(--line)}
+
+/* SECTION LABEL */
+.sec-label{font-family:'Caveat',cursive;font-size:12px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;padding:16px 16px 6px;display:flex;align-items:center;gap:6px}
+.sec-label::before{content:'—';opacity:0.4}
+
+/* CARDS */
+.card{background:white;border-radius:3px;margin:0 16px 14px;box-shadow:2px 3px 10px var(--shadow);overflow:hidden;position:relative}
+.card-tape{position:absolute;top:-8px;left:50%;transform:translateX(-50%) rotate(-1.5deg);width:50px;height:18px;z-index:3;background-color:rgba(122,158,126,0.42);background-image:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(255,255,255,0.3) 8px,rgba(255,255,255,0.3) 9px)}
+.card-tape.alt{background-color:rgba(181,164,154,0.5);transform:translateX(-50%) rotate(1deg)}
+.stamp-border{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 0% 50%,transparent 5px,var(--cream2) 5px) left/1px 12px repeat-y,radial-gradient(circle at 100% 50%,transparent 5px,var(--cream2) 5px) right/1px 12px repeat-y,radial-gradient(circle at 50% 0%,transparent 5px,var(--cream2) 5px) top/12px 1px repeat-x,radial-gradient(circle at 50% 100%,transparent 5px,var(--cream2) 5px) bottom/12px 1px repeat-x}
+
+/* JOURNAL ENTRY CARDS */
+.entry-card{background:var(--cream);margin:0 16px 24px;position:relative;cursor:pointer;transition:transform 0.15s;border-radius:2px;padding:3px;filter:drop-shadow(2px 3px 8px var(--shadow2))}
+.entry-card:active{transform:scale(0.98)}
+.entry-card-inner{background:var(--cream);border:1px solid var(--line);overflow:hidden}
+.entry-polaroids{display:flex;gap:0;padding:12px 12px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.entry-polaroids::-webkit-scrollbar{display:none}
+.pol-mini{flex-shrink:0;background:white;padding:4px 4px 12px;box-shadow:1px 2px 5px var(--shadow2);margin-right:8px;transform:rotate(-2deg)}
+.pol-mini:nth-child(even){transform:rotate(1.5deg)}
+.pol-mini img{width:75px;height:65px;object-fit:cover;display:block}
+.entry-body{padding:10px 14px 8px}
+.entry-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+.entry-date{font-family:'Caveat',cursive;font-size:15px;color:var(--ink);font-weight:600}
+.entry-loc{font-size:11px;color:var(--ink3);font-style:italic;margin-top:1px}
+.entry-badges{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.badge{font-size:10px;color:var(--ink3);border:1px solid var(--line);padding:2px 7px;border-radius:20px;font-family:'Caveat',cursive;letter-spacing:0.3px}
+.entry-text{font-size:13px;line-height:1.7;color:var(--ink2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-style:italic}
+.entry-footer{padding:7px 14px 11px;display:flex;gap:10px;border-top:1px solid var(--line)}
+.entry-stat{font-size:11px;color:var(--ink3)}
+
+/* EMPTY */
+.empty-state{text-align:center;padding:60px 30px}
+.empty-icon{font-size:44px;margin-bottom:14px;opacity:0.5}
+.empty-title{font-family:'Zen Antique',serif;font-size:18px;color:var(--ink2);margin-bottom:6px;letter-spacing:1px}
+.empty-text{font-size:13px;color:var(--ink3);line-height:1.8;font-style:italic}
+
+/* FORM */
+.form-wrap{padding:16px}
+.field-group{margin-bottom:14px}
+.field-label{font-family:'Caveat',cursive;font-size:12px;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:6px;display:block}
+.field-input{width:100%;background:white;border:1px solid var(--line);padding:11px 14px;font-family:'Noto Serif JP',serif;font-size:14px;color:var(--ink);outline:none;border-radius:2px}
+.field-input::placeholder{color:var(--ink3);font-style:italic}
+.field-row{display:flex;gap:10px}
+.field-row .field-group{flex:1}
+.field-textarea{min-height:110px;resize:none;line-height:1.7;font-family:'Caveat',cursive;font-size:18px;background-image:repeating-linear-gradient(transparent,transparent 34px,rgba(92,79,66,0.1) 34px,rgba(92,79,66,0.1) 35px);background-position:0 8px}
+
+/* VOICE */
+.voice-area{background:var(--cream2);border:1px solid var(--line);padding:16px;text-align:center;margin-bottom:14px;position:relative;overflow:hidden}
+.voice-area::before{content:'';position:absolute;top:0;left:0;right:0;height:6px;background-color:rgba(122,158,126,0.38);background-image:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(255,255,255,0.3) 8px,rgba(255,255,255,0.3) 9px)}
+.record-btn{width:58px;height:58px;border-radius:50%;border:none;background:var(--ink);color:var(--cream);font-size:22px;cursor:pointer;margin:0 auto 8px;display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink2);transition:all 0.15s}
+.record-btn.recording{background:var(--red);box-shadow:3px 3px 0 #922b21;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.record-status{font-family:'Caveat',cursive;font-size:15px;color:var(--ink3);letter-spacing:0.5px}
+.record-status.active{color:var(--red);font-weight:600}
+.record-hint{font-size:11px;color:var(--ink3);margin-top:3px;opacity:0.7;font-style:italic}
+
+/* MOOD & WEATHER */
+.mood-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.mood-btn{width:40px;height:40px;border-radius:50%;border:1.5px solid var(--line);background:var(--cream2);font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.mood-btn.selected{border-color:var(--ink2);background:var(--cream3);transform:scale(1.15);box-shadow:0 2px 6px var(--shadow2)}
+.weather-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.weather-btn{border:1px solid var(--line);background:white;padding:6px 11px;font-family:'Caveat',cursive;font-size:13px;color:var(--ink2);cursor:pointer;transition:all 0.15s}
+.weather-btn.selected{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+
+/* PHOTOS */
+.photo-grid{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:14px}
+.pol-thumb{background:white;padding:5px 5px 16px;box-shadow:2px 3px 8px var(--shadow2);position:relative;transform:rotate(-2deg)}
+.pol-thumb:nth-child(even){transform:rotate(1.5deg)}
+.pol-thumb img{width:82px;height:72px;object-fit:cover;display:block}
+.rm-photo{position:absolute;top:-6px;right:-6px;width:20px;height:20px;border-radius:50%;background:var(--red);color:white;border:none;font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+.add-pol{width:82px;background:white;border:1.5px dashed var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;cursor:pointer;color:var(--ink3);font-family:'Caveat',cursive;font-size:12px;padding:18px 0;box-shadow:2px 3px 8px var(--shadow)}
+.add-pol .plus{font-size:20px;color:var(--ink3)}
+input[type=file]{display:none}
+
+/* SAVE BTN */
+.save-btn-full{width:100%;padding:13px;border:none;background:var(--ink);color:var(--cream);font-family:'Caveat',cursive;font-size:17px;font-weight:600;cursor:pointer;box-shadow:3px 3px 0 var(--ink2);letter-spacing:0.5px;transition:all 0.15s;margin-top:4px}
+.save-btn-full:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink2)}
+
+/* DETAIL VIEW */
+#detailView{background:var(--cream2)}
+.detail-header{background:var(--cream);padding:0;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--line),0 4px 12px var(--shadow)}
+.detail-header-inner{display:flex;align-items:center;gap:10px;padding:12px 16px 10px}
+.detail-header-info{flex:1}
+.detail-date{font-family:'Zen Antique',serif;font-size:16px;color:var(--ink);letter-spacing:1px}
+.detail-loc{font-size:11px;color:var(--ink3);font-style:italic;margin-top:2px}
+.back-btn{background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink2);padding:4px 6px;display:flex;align-items:center}
+.del-btn{background:none;border:none;font-size:17px;cursor:pointer;color:var(--ink3);padding:6px}
+.detail-pol-row{display:flex;gap:10px;padding:16px 16px 4px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.detail-pol-row::-webkit-scrollbar{display:none}
+.pol-lg{flex-shrink:0;background:white;padding:7px 7px 22px;box-shadow:3px 4px 12px var(--shadow2);transform:rotate(-1.5deg)}
+.pol-lg:nth-child(even){transform:rotate(1deg)}
+.pol-lg img{width:150px;height:130px;object-fit:cover;display:block}
+.detail-page{margin:12px 14px 30px;background:white;border:1px solid var(--line);position:relative;overflow:hidden;box-shadow:3px 4px 12px var(--shadow2)}
+.det-tape-l,.det-tape-r{position:absolute;top:-4px;height:14px;width:46px;z-index:2;background-color:rgba(122,158,126,0.42);background-image:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(255,255,255,0.3) 8px,rgba(255,255,255,0.3) 9px)}
+.det-tape-l{left:12px;transform:rotate(-1.5deg)}
+.det-tape-r{right:12px;transform:rotate(1.5deg)}
+.detail-page-hdr{padding:14px 16px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
+.detail-mood-weather{display:flex;gap:7px;align-items:center}
+.detail-mood{font-size:20px}
+.detail-weather{font-family:'Caveat',cursive;font-size:12px;color:var(--ink3);border:1px solid var(--line);padding:2px 9px;letter-spacing:0.5px}
+.detail-text{font-family:'Caveat',cursive;font-size:19px;color:var(--ink);line-height:1.8;padding:14px 16px 28px;white-space:pre-wrap;background-image:repeating-linear-gradient(transparent,transparent 34px,rgba(92,79,66,0.08) 34px,rgba(92,79,66,0.08) 35px);background-position:0 8px;min-height:120px;position:relative}
+.detail-text::before{content:'';position:absolute;left:34px;top:0;bottom:0;width:1px;background:rgba(192,57,43,0.18)}
+.stamp-deco{position:absolute;bottom:12px;right:12px;border:1.5px solid var(--line);padding:3px 7px;font-family:'Zen Antique',serif;font-size:8px;color:var(--ink3);letter-spacing:2px;background:white}
+
+/* EXPENSES */
+.budget-bar-wrap{background:white;border:1px solid var(--line);margin:0 16px 14px;padding:14px 16px}
+.budget-label{font-family:'Caveat',cursive;font-size:13px;color:var(--ink3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px}
+.budget-amounts{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px}
+.budget-spent{font-family:'Zen Antique',serif;font-size:24px;color:var(--ink);letter-spacing:1px}
+.budget-total{font-family:'Caveat',cursive;font-size:15px;color:var(--ink3)}
+.budget-bar{height:8px;background:var(--cream3);border-radius:4px;overflow:hidden}
+.budget-bar-fill{height:100%;background:var(--sage);border-radius:4px;transition:width 0.5s ease}
+.budget-bar-fill.over{background:var(--red)}
+.budget-remaining{font-family:'Caveat',cursive;font-size:13px;color:var(--ink3);margin-top:6px;text-align:right}
+.currency-row{display:flex;gap:8px;align-items:center;margin:0 16px 14px;background:white;border:1px solid var(--line);padding:12px 14px}
+.currency-input{flex:1;border:none;background:none;font-family:'Caveat',cursive;font-size:20px;font-weight:600;color:var(--ink);outline:none;width:100%}
+.currency-label{font-family:'Caveat',cursive;font-size:12px;color:var(--ink3);letter-spacing:1px;white-space:nowrap}
+.currency-result{font-family:'Caveat',cursive;font-size:15px;color:var(--sage);font-weight:600;margin-top:4px}
+.exp-item{background:white;border:1px solid var(--line);margin:0 16px 8px;padding:12px 14px;display:flex;align-items:center;gap:10px;position:relative}
+.exp-cat-icon{font-size:22px;flex-shrink:0}
+.exp-info{flex:1}
+.exp-desc{font-family:'Caveat',cursive;font-size:16px;color:var(--ink);font-weight:600}
+.exp-meta{font-size:11px;color:var(--ink3);margin-top:2px}
+.exp-amount{font-family:'Zen Antique',serif;font-size:16px;color:var(--ink);letter-spacing:0.5px}
+.exp-del{background:none;border:none;font-size:14px;color:var(--ink3);cursor:pointer;padding:4px}
+.cat-chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.cat-chip{border:1px solid var(--line);background:var(--cream2);padding:6px 12px;font-family:'Caveat',cursive;font-size:13px;color:var(--ink2);cursor:pointer;transition:all 0.15s;border-radius:2px}
+.cat-chip.selected{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+
+/* CHECKLIST */
+.check-item{background:white;border:1px solid var(--line);margin:0 16px 6px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer;transition:all 0.15s}
+.check-item:active{background:var(--cream2)}
+.check-box{width:22px;height:22px;border:1.5px solid var(--line);border-radius:2px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:13px;transition:all 0.15s}
+.check-item.checked .check-box{background:var(--sage);border-color:var(--sage);color:white}
+.check-item.checked .check-text{text-decoration:line-through;color:var(--ink3)}
+.check-text{font-size:14px;color:var(--ink);flex:1}
+.check-category{font-size:10px;color:var(--ink3);font-family:'Caveat',cursive;letter-spacing:0.5px}
+
+/* FOOD LIST */
+.food-item{background:white;border:1px solid var(--line);margin:0 16px 6px;padding:12px 14px;display:flex;align-items:center;gap:10px;cursor:pointer}
+.food-item.tried .food-text{text-decoration:line-through;color:var(--ink3)}
+.food-emoji{font-size:20px;flex-shrink:0}
+.food-text{font-size:14px;color:var(--ink);flex:1}
+.food-del{background:none;border:none;font-size:14px;color:var(--ink3);cursor:pointer}
+
+/* HIGHLIGHTS */
+.highlight-item{background:white;border:1px solid var(--line);margin:0 16px 10px;padding:14px 16px;position:relative}
+.highlight-item::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--gold)}
+.highlight-label{font-family:'Caveat',cursive;font-size:11px;color:var(--gold);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+.highlight-text{font-size:14px;color:var(--ink);line-height:1.6}
+
+/* EMERGENCY */
+.emergency-card{background:white;border:1px solid var(--line);margin:0 16px 10px;padding:14px 16px;position:relative}
+.emergency-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:var(--red)}
+.emergency-label{font-family:'Caveat',cursive;font-size:11px;color:var(--red);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:4px}
+.emergency-text{font-size:14px;color:var(--ink);line-height:1.6;white-space:pre-wrap}
+
+/* RATING STARS */
+.star-row{display:flex;gap:6px;margin-bottom:14px}
+.star-btn{font-size:24px;cursor:pointer;opacity:0.3;transition:all 0.15s;border:none;background:none;padding:2px}
+.star-btn.active{opacity:1}
+
+/* ADD INPUT ROW */
+.add-input-row{display:flex;gap:8px;margin:0 16px 8px}
+.add-input{flex:1;background:white;border:1px solid var(--line);padding:10px 12px;font-family:'Noto Serif JP',serif;font-size:13px;color:var(--ink);outline:none}
+.add-input::placeholder{color:var(--ink3);font-style:italic}
+.add-btn{background:var(--ink);color:var(--cream);border:none;padding:10px 16px;font-family:'Caveat',cursive;font-size:14px;font-weight:600;cursor:pointer;white-space:nowrap}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(42,33,24,0.45);z-index:500;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+.modal-overlay.show{display:flex}
+.modal{background:var(--cream);width:100%;max-height:88vh;overflow-y:auto;padding:18px 18px 36px;box-shadow:0 -8px 30px var(--shadow2)}
+.modal-handle{width:36px;height:3px;background:var(--line);border-radius:2px;margin:0 auto 14px}
+.modal-title{font-family:'Zen Antique',serif;font-size:18px;color:var(--ink);margin-bottom:16px;text-align:center;letter-spacing:1px}
+.modal-input{width:100%;background:white;border:1px solid var(--line);padding:11px 14px;font-family:'Noto Serif JP',serif;font-size:14px;color:var(--ink);outline:none;margin-bottom:10px}
+.modal-input::placeholder{color:var(--ink3);font-style:italic}
+.modal-label{font-family:'Caveat',cursive;font-size:11px;color:var(--ink3);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:5px;display:block}
+.modal-btn{width:100%;padding:13px;border:none;background:var(--ink);color:var(--cream);font-family:'Caveat',cursive;font-size:16px;font-weight:600;cursor:pointer;box-shadow:3px 3px 0 var(--ink2);margin-top:4px;letter-spacing:0.5px}
+.modal-btn-cancel{width:100%;padding:11px;border:1px solid var(--line);background:none;color:var(--ink2);font-family:'Caveat',cursive;font-size:15px;cursor:pointer;margin-top:8px}
+
+/* LOCK SCREEN */
+.lock-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;background:var(--cream);padding:30px}
+.lock-screen.hidden{display:none}
+.lock-kanji{font-family:'Zen Antique',serif;font-size:52px;color:var(--ink);margin-bottom:8px;letter-spacing:4px}
+.lock-title{font-family:'Caveat',cursive;font-size:22px;color:var(--ink2);margin-bottom:4px}
+.lock-subtitle{font-size:12px;color:var(--ink3);margin-bottom:32px;font-style:italic;letter-spacing:0.5px}
+.lock-card{background:white;border:1px solid var(--line);padding:24px 20px;width:100%;max-width:320px;box-shadow:4px 4px 0 var(--cream3)}
+.lock-label{font-family:'Caveat',cursive;font-size:11px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;margin-bottom:8px;display:block}
+.lock-input{width:100%;background:var(--cream2);border:1px solid var(--line);padding:13px 16px;font-family:'Caveat',cursive;font-size:20px;color:var(--ink);font-weight:600;outline:none;text-align:center;letter-spacing:4px;margin-bottom:14px;transition:border-color 0.2s}
+.lock-input:focus{border-color:var(--ink2)}
+.lock-input.shake{animation:shake 0.4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.lock-btn{width:100%;padding:13px;border:none;background:var(--ink);color:var(--cream);font-family:'Caveat',cursive;font-size:16px;font-weight:600;cursor:pointer;box-shadow:3px 3px 0 var(--ink2);letter-spacing:0.5px}
+.lock-error{color:var(--red);font-size:13px;font-family:'Caveat',cursive;text-align:center;margin-top:10px;min-height:18px;letter-spacing:0.3px}
+
+/* PLACES */
+.place-card{background:white;border:1px solid var(--line);margin:0 16px 10px;padding:14px 16px;position:relative;cursor:pointer;transition:transform 0.15s}
+.place-card:active{transform:scale(0.98)}
+.place-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:100%}
+.place-card.restaurant::before{background:var(--red)}
+.place-card.cafe::before{background:var(--dusty)}
+.place-card.hotel::before{background:var(--sage)}
+.place-card.attraction::before{background:var(--gold)}
+.place-card.shop::before{background:var(--ink2)}
+.place-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:6px}
+.place-name{font-family:'Caveat',cursive;font-size:18px;font-weight:700;color:var(--ink)}
+.place-type{font-family:'Caveat',cursive;font-size:11px;color:var(--ink3);letter-spacing:1px;text-transform:uppercase;margin-top:2px}
+.place-stars{font-size:14px;letter-spacing:1px}
+.place-notes{font-size:13px;color:var(--ink2);line-height:1.6;font-style:italic;margin-top:4px}
+.place-meta{font-size:11px;color:var(--ink3);margin-top:5px;display:flex;gap:8px}
+.place-photos{display:flex;gap:6px;padding:10px 0 0;overflow-x:auto;scrollbar-width:none}
+.place-photos::-webkit-scrollbar{display:none}
+.place-photos img{width:70px;height:60px;object-fit:cover;border-radius:2px;flex-shrink:0;border:2px solid white;box-shadow:1px 1px 4px var(--shadow)}
+.type-filter{display:flex;gap:6px;padding:12px 16px 8px;overflow-x:auto;scrollbar-width:none}
+.type-filter::-webkit-scrollbar{display:none}
+.type-chip{border:1px solid var(--line);background:white;padding:5px 12px;font-family:'Caveat',cursive;font-size:13px;color:var(--ink2);cursor:pointer;white-space:nowrap;transition:all 0.15s;flex-shrink:0}
+.type-chip.active{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+.places-stat{padding:8px 16px;font-family:'Caveat',cursive;font-size:13px;color:var(--ink3);letter-spacing:0.5px}
+
+/* LOADING + TOAST */
+.loading-overlay{position:fixed;inset:0;background:rgba(247,243,238,0.88);display:none;align-items:center;justify-content:center;z-index:9000;flex-direction:column;gap:12px;backdrop-filter:blur(2px)}
+.loading-overlay.show{display:flex}
+.loading-spinner{width:32px;height:32px;border:2px solid var(--line);border-top-color:var(--ink2);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:'Caveat',cursive;font-size:17px;color:var(--ink3);font-style:italic}
+.toast{position:fixed;bottom:72px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--cream);padding:9px 20px;font-family:'Caveat',cursive;font-size:15px;z-index:9999;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);box-shadow:3px 3px 0 var(--ink2);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--sage);box-shadow:3px 3px 0 #5a7a5e}
+.toast.error{background:var(--red);box-shadow:3px 3px 0 #922b21}
+::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
+</style>
+</head>
+<body>
+
+<!-- LOCK SCREEN -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-kanji">旅</div>
+  <div class="lock-title">Travel Journal</div>
+  <div class="lock-subtitle">every journey, remembered</div>
+  <div class="lock-card">
+    <label class="lock-label">Password</label>
+    <input class="lock-input" type="password" id="lockInput" placeholder="••••••" onkeydown="if(event.key==='Enter')checkPassword()">
+    <button class="lock-btn" onclick="checkPassword()">Open Journal →</button>
+    <div class="lock-error" id="lockError"></div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div><div class="loading-text" id="loadingText">loading...</div></div>
+<div class="toast" id="toast"></div>
+
+<!-- ══ JOURNAL TAB ══ -->
+<div class="view active" id="journalView">
+  <div class="page-header">
+    <div class="washi washi-sage"></div>
+    <div class="page-header-inner">
+      <div><div class="page-title">旅 Journey<span>my travel journal</span></div></div>
+      <button class="header-btn" onclick="showNewEntry()">+ New</button>
+    </div>
+  </div>
+  <div id="entriesList" style="padding:16px 0 20px"></div>
+</div>
+
+<!-- ══ NEW ENTRY VIEW ══ -->
+<div class="view" id="entryFormView">
+  <div class="page-header">
+    <div class="washi washi-dusty"></div>
+    <div class="page-header-inner">
+      <button class="back-btn" onclick="showTab('journalView',0)">←</button>
+      <div class="page-title" style="font-size:17px">New Entry</div>
+      <button class="header-btn" onclick="saveEntry()">Save ✓</button>
+    </div>
+  </div>
+  <div class="form-wrap">
+    <div class="field-row">
+      <div class="field-group"><label class="field-label">📅 Date</label><input class="field-input" type="date" id="entryDate"></div>
+      <div class="field-group"><label class="field-label">📍 Location</label><input class="field-input" type="text" id="entryLocation" placeholder="City / Place"></div>
+    </div>
+    <div class="field-group"><label class="field-label">😊 Mood</label>
+      <div class="mood-row" id="moodRow">
+        <button class="mood-btn" data-mood="😊" onclick="selMood(this)">😊</button>
+        <button class="mood-btn" data-mood="🥰" onclick="selMood(this)">🥰</button>
+        <button class="mood-btn" data-mood="🤩" onclick="selMood(this)">🤩</button>
+        <button class="mood-btn" data-mood="😌" onclick="selMood(this)">😌</button>
+        <button class="mood-btn" data-mood="😴" onclick="selMood(this)">😴</button>
+        <button class="mood-btn" data-mood="😅" onclick="selMood(this)">😅</button>
+        <button class="mood-btn" data-mood="🥺" onclick="selMood(this)">🥺</button>
+      </div>
+    </div>
+    <div class="field-group"><label class="field-label">🌤 Weather</label>
+      <div class="weather-row" id="weatherRow">
+        <button class="weather-btn" data-w="☀️ Sunny" onclick="selWeather(this)">☀️ Sunny</button>
+        <button class="weather-btn" data-w="⛅ Cloudy" onclick="selWeather(this)">⛅ Cloudy</button>
+        <button class="weather-btn" data-w="🌧 Rainy" onclick="selWeather(this)">🌧 Rainy</button>
+        <button class="weather-btn" data-w="❄️ Cold" onclick="selWeather(this)">❄️ Cold</button>
+        <button class="weather-btn" data-w="🌫 Misty" onclick="selWeather(this)">🌫 Misty</button>
+      </div>
+    </div>
+    <div class="field-group"><label class="field-label">🎤 Voice</label>
+      <div class="voice-area">
+        <button class="record-btn" id="recordBtn" onclick="toggleRec()">🎙️</button>
+        <div class="record-status" id="recordStatus">Tap to record</div>
+        <div class="record-hint">tap once to start · tap again to stop</div>
+      </div>
+    </div>
+    <div class="field-group"><label class="field-label">✍️ Journal Entry</label>
+      <textarea class="field-input field-textarea" id="entryText" placeholder="What happened today..."></textarea>
+    </div>
+    <div class="field-group"><label class="field-label">📸 Photos</label>
+      <div class="photo-grid" id="entryPhotos">
+        <div class="add-pol" onclick="document.getElementById('photoIn').click()"><span class="plus">+</span><span>Add</span></div>
+      </div>
+      <input type="file" id="photoIn" accept="image/*" multiple onchange="addPhotos(event)">
+    </div>
+    <button class="save-btn-full" onclick="saveEntry()">✦ Save Entry</button>
+  </div>
+</div>
+
+<!-- ══ DETAIL VIEW ══ -->
+<div class="view" id="detailView">
+  <div class="detail-header">
+    <div class="washi washi-red"></div>
+    <div class="detail-header-inner">
+      <button class="back-btn" onclick="showTab('journalView',0)">←</button>
+      <div class="detail-header-info">
+        <div class="detail-date" id="detailDate"></div>
+        <div class="detail-loc" id="detailLoc"></div>
+      </div>
+      <button class="del-btn" onclick="deleteEntry()">🗑</button>
+    </div>
+  </div>
+  <div class="detail-pol-row" id="detailPhotos"></div>
+  <div class="detail-page">
+    <div class="det-tape-l"></div><div class="det-tape-r"></div>
+    <div class="detail-page-hdr">
+      <div class="detail-mood-weather">
+        <span class="detail-mood" id="detailMood"></span>
+        <span class="detail-weather" id="detailWeather"></span>
+      </div>
+    </div>
+    <div class="detail-text" id="detailText"></div>
+    <div class="stamp-deco">旅の記録</div>
+  </div>
+</div>
+
+<!-- ══ EXPENSES TAB ══ -->
+<div class="view" id="expensesView">
+  <div class="page-header">
+    <div class="washi washi-gold"></div>
+    <div class="page-header-inner">
+      <div><div class="page-title">¥ Expenses<span>trip budget tracker</span></div></div>
+      <button class="header-btn" onclick="showExpenseModal()">+ Add</button>
+    </div>
+  </div>
+
+  <!-- Budget bar -->
+  <div style="padding:16px 0 0">
+    <div class="budget-bar-wrap">
+      <div class="budget-label">Trip Budget</div>
+      <div class="budget-amounts">
+        <div><div style="font-size:11px;color:var(--ink3);font-family:'Caveat',cursive;letter-spacing:1px">SPENT</div><div class="budget-spent" id="budgetSpent">RM 0</div></div>
+        <div style="text-align:right"><div style="font-size:11px;color:var(--ink3);font-family:'Caveat',cursive;letter-spacing:1px">BUDGET</div><div class="budget-total" id="budgetTotalLabel">RM 0</div></div>
+      </div>
+      <div class="budget-bar"><div class="budget-bar-fill" id="budgetBarFill" style="width:0%"></div></div>
+      <div class="budget-remaining" id="budgetRemaining"></div>
+    </div>
+    <div style="margin:0 16px 14px;display:flex;gap:8px">
+      <input class="field-input" type="number" id="budgetInput" placeholder="Set total budget (RM)" style="flex:1">
+      <button class="add-btn" onclick="saveBudget()">Set</button>
+    </div>
+  </div>
+
+  <!-- Currency converter -->
+  <div class="sec-label">Currency Converter</div>
+  <div class="currency-row">
+    <div style="flex:1">
+      <div class="currency-label">JPY ¥</div>
+      <input class="currency-input" type="number" id="jpyInput" placeholder="0" oninput="convertCurrency()">
+    </div>
+    <div style="font-family:'Caveat',cursive;font-size:20px;color:var(--ink3);padding:0 8px">→</div>
+    <div style="flex:1;text-align:right">
+      <div class="currency-label">MYR RM</div>
+      <div class="currency-result" id="myrResult">RM 0.00</div>
+    </div>
+  </div>
+  <div style="padding:0 16px 4px;font-size:11px;color:var(--ink3);font-style:italic;font-family:'Caveat',cursive">Rate: ¥100 ≈ RM 2.94 · tap amount to edit</div>
+
+  <!-- Expense list -->
+  <div class="sec-label">All Expenses</div>
+  <div id="expensesList" style="padding-bottom:20px"></div>
+</div>
+
+<!-- ══ TRIP TAB ══ -->
+<div class="view" id="tripView">
+  <div class="page-header">
+    <div class="washi washi-dusty"></div>
+    <div class="page-header-inner">
+      <div><div class="page-title">✈️ Trip<span>planning & highlights</span></div></div>
+    </div>
+  </div>
+
+  <!-- Trip rating -->
+  <div class="sec-label">⭐ Trip Rating</div>
+  <div style="padding:0 16px 14px;background:white;margin:0 16px 14px;border:1px solid var(--line)">
+    <div style="padding:14px 0 8px;display:flex;gap:4px;justify-content:center" id="starRow">
+      <button class="star-btn" data-star="1" onclick="rateStar(1)">⭐</button>
+      <button class="star-btn" data-star="2" onclick="rateStar(2)">⭐</button>
+      <button class="star-btn" data-star="3" onclick="rateStar(3)">⭐</button>
+      <button class="star-btn" data-star="4" onclick="rateStar(4)">⭐</button>
+      <button class="star-btn" data-star="5" onclick="rateStar(5)">⭐</button>
+    </div>
+    <div style="font-family:'Caveat',cursive;font-size:14px;color:var(--ink3);text-align:center;padding-bottom:12px" id="ratingLabel">Tap to rate your trip</div>
+  </div>
+
+  <!-- Highlights -->
+  <div class="sec-label">✨ Highlights</div>
+  <div id="highlightsList"></div>
+  <div class="add-input-row">
+    <select class="add-input" id="highlightCat" style="font-family:'Caveat',cursive;font-size:14px">
+      <option value="🍜 Best Meal">🍜 Best Meal</option>
+      <option value="📸 Best Moment">📸 Best Moment</option>
+      <option value="🏯 Best Place">🏯 Best Place</option>
+      <option value="🛍 Best Buy">🛍 Best Buy</option>
+      <option value="😂 Funniest Moment">😂 Funniest Moment</option>
+      <option value="💡 Best Tip">💡 Best Tip</option>
+    </select>
+  </div>
+  <div class="add-input-row">
+    <input class="add-input" type="text" id="highlightInput" placeholder="Describe the highlight...">
+    <button class="add-btn" onclick="addHighlight()">Add</button>
+  </div>
+
+  <!-- Food list -->
+  <div class="sec-label">🍱 Must-Try Food List</div>
+  <div id="foodList"></div>
+  <div class="add-input-row">
+    <input class="add-input" type="text" id="foodInput" placeholder="e.g. Ramen at Ichiran...">
+    <button class="add-btn" onclick="addFood()">Add</button>
+  </div>
+
+  <div style="height:20px"></div>
+</div>
+
+<!-- ══ PLACES TAB ══ -->
+<div class="view" id="placesView">
+  <div class="page-header">
+    <div class="washi washi-gold"></div>
+    <div class="page-header-inner">
+      <div><div class="page-title">📍 Places<span>restaurants · cafes · spots</span></div></div>
+      <button class="header-btn" onclick="showPlaceModal()">+ Add</button>
+    </div>
+  </div>
+  <div class="type-filter" id="typeFilter">
+    <div class="type-chip active" data-type="all" onclick="filterPlaces('all',this)">All</div>
+    <div class="type-chip" data-type="restaurant" onclick="filterPlaces('restaurant',this)">🍜 Restaurant</div>
+    <div class="type-chip" data-type="cafe" onclick="filterPlaces('cafe',this)">☕ Cafe</div>
+    <div class="type-chip" data-type="hotel" onclick="filterPlaces('hotel',this)">🏨 Hotel</div>
+    <div class="type-chip" data-type="attraction" onclick="filterPlaces('attraction',this)">🏯 Attraction</div>
+    <div class="type-chip" data-type="shop" onclick="filterPlaces('shop',this)">🛍 Shop</div>
+  </div>
+  <div class="places-stat" id="placesStat"></div>
+  <div id="placesList" style="padding-bottom:20px"></div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar" id="mainTabBar">
+  <button class="tab-item active" onclick="showTab('journalView',0)"><span class="tab-icon">📖</span><span class="tab-label">Journal</span></button>
+  <button class="tab-item" onclick="showTab('expensesView',1)"><span class="tab-icon">¥</span><span class="tab-label">Expenses</span></button>
+  <button class="tab-item" onclick="showTab('tripView',2)"><span class="tab-icon">✈️</span><span class="tab-label">Trip</span></button>
+  <button class="tab-item" onclick="showTab('placesView',3)"><span class="tab-icon">📍</span><span class="tab-label">Places</span></button>
+</div>
+
+<!-- EXPENSE MODAL -->
+<div class="modal-overlay" id="expenseModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add Expense</div>
+    <label class="modal-label">Category</label>
+    <div class="cat-chips" id="catChips">
+      <div class="cat-chip selected" data-cat="🍜 Food" onclick="selCat(this)">🍜 Food</div>
+      <div class="cat-chip" data-cat="🚃 Transport" onclick="selCat(this)">🚃 Transport</div>
+      <div class="cat-chip" data-cat="🏨 Hotel" onclick="selCat(this)">🏨 Hotel</div>
+      <div class="cat-chip" data-cat="🎭 Activities" onclick="selCat(this)">🎭 Activities</div>
+      <div class="cat-chip" data-cat="🛍 Shopping" onclick="selCat(this)">🛍 Shopping</div>
+      <div class="cat-chip" data-cat="💊 Health" onclick="selCat(this)">💊 Health</div>
+      <div class="cat-chip" data-cat="📦 Others" onclick="selCat(this)">📦 Others</div>
+    </div>
+    <label class="modal-label">Amount (RM)</label>
+    <input class="modal-input" type="number" id="expAmount" placeholder="0.00" step="0.01">
+    <label class="modal-label">Description</label>
+    <input class="modal-input" type="text" id="expDesc" placeholder="e.g. Ramen at Ichiran">
+    <label class="modal-label">Date</label>
+    <input class="modal-input" type="date" id="expDate">
+    <button class="modal-btn" onclick="saveExpense()">✦ Save Expense</button>
+    <button class="modal-btn-cancel" onclick="closeExpenseModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- PLACE DETAIL MODAL -->
+<div class="modal-overlay" id="placeDetailModal">
+  <div class="modal" style="max-height:88vh">
+    <div class="modal-handle"></div>
+    <div id="placeDetailContent"></div>
+    <button class="modal-btn-cancel" onclick="document.getElementById('placeDetailModal').classList.remove('show')" style="margin-top:8px">Close</button>
+    <button class="modal-btn-cancel" onclick="deletePlace()" style="margin-top:8px;color:var(--red);border-color:rgba(192,57,43,0.3)">🗑 Delete this place</button>
+  </div>
+</div>
+
+<!-- PLACE MODAL -->
+<div class="modal-overlay" id="placeModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">Add a Place</div>
+    <label class="modal-label">Place Name</label>
+    <input class="modal-input" type="text" id="placeName" placeholder="e.g. Ichiran Ramen Shibuya">
+    <label class="modal-label">Type</label>
+    <div class="cat-chips" id="placeTypePicker">
+      <div class="cat-chip selected" data-t="restaurant" onclick="selPlaceType(this)">🍜 Restaurant</div>
+      <div class="cat-chip" data-t="cafe" onclick="selPlaceType(this)">☕ Cafe</div>
+      <div class="cat-chip" data-t="hotel" onclick="selPlaceType(this)">🏨 Hotel</div>
+      <div class="cat-chip" data-t="attraction" onclick="selPlaceType(this)">🏯 Attraction</div>
+      <div class="cat-chip" data-t="shop" onclick="selPlaceType(this)">🛍 Shop</div>
+    </div>
+    <label class="modal-label">Rating</label>
+    <div style="display:flex;gap:6px;margin-bottom:10px" id="placeStarRow">
+      <button class="star-btn active" data-s="1" onclick="selPlaceStar(1)" style="font-size:22px;border:none;background:none;cursor:pointer">⭐</button>
+      <button class="star-btn active" data-s="2" onclick="selPlaceStar(2)" style="font-size:22px;border:none;background:none;cursor:pointer">⭐</button>
+      <button class="star-btn active" data-s="3" onclick="selPlaceStar(3)" style="font-size:22px;border:none;background:none;cursor:pointer">⭐</button>
+      <button class="star-btn" data-s="4" onclick="selPlaceStar(4)" style="font-size:22px;border:none;background:none;cursor:pointer;opacity:0.3">⭐</button>
+      <button class="star-btn" data-s="5" onclick="selPlaceStar(5)" style="font-size:22px;border:none;background:none;cursor:pointer;opacity:0.3">⭐</button>
+    </div>
+    <label class="modal-label">Notes / Review</label>
+    <textarea class="modal-input" id="placeNotes" rows="3" placeholder="What did you think? Must order? Would you return?"></textarea>
+    <label class="modal-label">Location / City</label>
+    <input class="modal-input" type="text" id="placeCity" placeholder="e.g. Shibuya, Tokyo">
+    <label class="modal-label">Date Visited</label>
+    <input class="modal-input" type="date" id="placeDate">
+    <label class="modal-label">Photos (optional)</label>
+    <div class="photo-grid" id="placePhotosGrid" style="margin-bottom:10px">
+      <div class="add-pol" onclick="document.getElementById('placePhotoIn').click()"><span class="plus">+</span><span>Add</span></div>
+    </div>
+    <input type="file" id="placePhotoIn" accept="image/*" multiple onchange="addPlacePhotos(event)">
+    <button class="modal-btn" onclick="savePlace()">✦ Save Place</button>
+    <button class="modal-btn-cancel" onclick="closePlaceModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE ──
+const SB_URL='https://uwgotfnwnbgqnwvumvxn.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3Z290Zm53bmJncW53dnVtdnhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5OTQwMzEsImV4cCI6MjA5MjU3MDAzMX0.SL6B4EN8Q32MXmdVySDGlPq7B-zFWPeGyWY15I73VNU';
+const H={'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'};
+const sb={
+  async q(t,o={}){let u=`${SB_URL}/rest/v1/${t}`;const p=[];if(o.select)p.push(`select=${o.select}`);if(o.order)p.push(`order=${o.order}`);if(o.eq)Object.entries(o.eq).forEach(([k,v])=>p.push(`${k}=eq.${v}`));if(p.length)u+='?'+p.join('&');return(await fetch(u,{headers:H})).json()},
+  async ins(t,d){return(await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify(d)})).json()},
+  async del(t,id){return(await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:H})).ok},
+  async upsert(t,d,on){return(await fetch(`${SB_URL}/rest/v1/${t}?on_conflict=${on}`,{method:'POST',headers:{...H,'Prefer':'return=representation,resolution=merge-duplicates'},body:JSON.stringify(d)})).json()},
+  async up(file,path){const r=await fetch(`${SB_URL}/storage/v1/object/journal-photos/${path}`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':file.type,'x-upsert':'true'},body:file});return r.ok?`${SB_URL}/storage/v1/object/public/journal-photos/${path}`:null}
+};
+
+// ── PASSWORD ──
+const APP_PASSWORD='journey2025'; // ← Change this to your own password
+
+function checkPassword(){
+  const v=document.getElementById('lockInput').value;
+  if(v===APP_PASSWORD){
+    document.getElementById('lockScreen').classList.add('hidden');
+    sessionStorage.setItem('tj_auth','1');
+    init();
+  }else{
+    document.getElementById('lockError').textContent='Wrong password, try again';
+    const i=document.getElementById('lockInput');
+    i.classList.add('shake');i.value='';
+    setTimeout(()=>i.classList.remove('shake'),400);
+  }
+}
+
+// ── STATE ──
+let selMoodVal='',selWeatherVal='',selCatVal='🍜 Food';
+let entryPhotos=[],recognition=null,isRec=false,finalTranscript='';
+let currentEntry=null,tripBudget=0,tripRating=0;
+
+// ── TABS ──
+const TABS=['journalView','expensesView','tripView','emergencyView'];
+function showTab(id,idx){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  document.querySelectorAll('.tab-item')[idx].classList.add('active');
+  window.scrollTo(0,0);
+  document.getElementById('mainTabBar').style.display='flex';
+  if(id==='journalView')loadEntries();
+  if(id==='expensesView')loadExpenses();
+  if(id==='tripView')loadTrip();
+  if(id==='placesView')loadPlaces();
+}
+
+function showNewEntry(){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('entryFormView').classList.add('active');
+  document.getElementById('mainTabBar').style.display='none';
+  document.getElementById('entryDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('entryLocation').value='';
+  document.getElementById('entryText').value='';
+  selMoodVal='';selWeatherVal='';entryPhotos=[];finalTranscript='';
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.weather-btn').forEach(b=>b.classList.remove('selected'));
+  renderEntryPhotos();stopRec();window.scrollTo(0,0);
+}
+
+function showDetail(id){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.getElementById('detailView').classList.add('active');
+  document.getElementById('mainTabBar').style.display='none';
+  loadEntryDetail(id);window.scrollTo(0,0);
+}
+
+// ── MOOD/WEATHER ──
+function selMood(btn){document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');selMoodVal=btn.dataset.mood}
+function selWeather(btn){document.querySelectorAll('.weather-btn').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');selWeatherVal=btn.dataset.w}
+
+// ── VOICE ──
+function startRec(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showToast('Voice not supported. Type instead.','error');return}
+  recognition=new SR();recognition.continuous=false;recognition.interimResults=false;recognition.lang='en-US';
+  recognition.onresult=(e)=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)finalTranscript+=e.results[i][0].transcript+' ';}document.getElementById('entryText').value=finalTranscript.trim()};
+  recognition.onerror=(e)=>{if(e.error==='no-speech'){if(isRec)restartRec()}else if(e.error!=='aborted'){showToast('Mic error','error');stopRec()}};
+  recognition.onend=()=>{if(isRec)restartRec()};
+  try{recognition.start();isRec=true;document.getElementById('recordBtn').classList.add('recording');document.getElementById('recordBtn').textContent='⏹️';document.getElementById('recordStatus').textContent='Recording...';document.getElementById('recordStatus').classList.add('active')}
+  catch(e){showToast('Could not start','error')}
+}
+function restartRec(){if(!isRec)return;try{const SR=window.SpeechRecognition||window.webkitSpeechRecognition;recognition=new SR();recognition.continuous=false;recognition.interimResults=false;recognition.lang='en-US';recognition.onresult=(e)=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)finalTranscript+=e.results[i][0].transcript+' ';}document.getElementById('entryText').value=finalTranscript.trim()};recognition.onerror=(e)=>{if(e.error!=='aborted'&&e.error!=='no-speech')stopRec()};recognition.onend=()=>{if(isRec)restartRec()};recognition.start()}catch(e){}}
+function toggleRec(){isRec?stopRec():startRec()}
+function stopRec(){isRec=false;if(recognition){try{recognition.stop()}catch(e){}recognition=null}document.getElementById('recordBtn').classList.remove('recording');document.getElementById('recordBtn').textContent='🎙️';document.getElementById('recordStatus').textContent='Tap to record';document.getElementById('recordStatus').classList.remove('active')}
+
+// ── PHOTOS ──
+function addPhotos(e){Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=(ev)=>{entryPhotos.push({file:f,preview:ev.target.result});renderEntryPhotos()};r.readAsDataURL(f)});e.target.value=''}
+function renderEntryPhotos(){
+  const g=document.getElementById('entryPhotos');g.innerHTML='';
+  entryPhotos.forEach((p,i)=>{const d=document.createElement('div');d.className='pol-thumb';d.innerHTML=`<img src="${p.preview}"><button class="rm-photo" onclick="entryPhotos.splice(${i},1);renderEntryPhotos()">✕</button>`;g.appendChild(d)});
+  const a=document.createElement('div');a.className='add-pol';a.innerHTML='<span class="plus">+</span><span>Add</span>';a.onclick=()=>document.getElementById('photoIn').click();g.appendChild(a);
+}
+
+// ── SAVE ENTRY ──
+async function saveEntry(){
+  const text=document.getElementById('entryText').value.trim();
+  const date=document.getElementById('entryDate').value;
+  const loc=document.getElementById('entryLocation').value.trim();
+  if(!text&&entryPhotos.length===0){showToast('Add text or photos','error');return}
+  if(!date){showToast('Pick a date','error');return}
+  stopRec();showLoading('saving...');
+  try{
+    const urls=[];
+    for(const p of entryPhotos){const url=await sb.up(p.file,`travel_${Date.now()}_${Math.random().toString(36).substr(2,6)}.${p.file.name.split('.').pop()}`);if(url)urls.push(url)}
+    const res=await sb.ins('journal_entries',{transcript:text||null,entry_date:date,location_tag:loc||null,photo_urls:urls.length?JSON.stringify(urls):null,mood:selMoodVal||null,weather:selWeatherVal||null,created_at:new Date().toISOString()});
+    if(res&&!res.error&&res.length>0){hideLoading();showToast('Entry saved ✦','success');setTimeout(()=>showTab('journalView',0),1200)}
+    else throw new Error(res?.error?.message||'failed');
+  }catch(e){hideLoading();console.error(e);showToast('Could not save','error')}
+}
+
+// ── LOAD ENTRIES ──
+async function loadEntries(){
+  const list=document.getElementById('entriesList');
+  list.innerHTML='<div style="text-align:center;padding:30px"><div class="loading-spinner" style="margin:0 auto"></div></div>';
+  try{
+    const entries=await sb.q('journal_entries',{select:'*',order:'entry_date.desc,created_at.desc'});
+    if(!entries||entries.length===0){list.innerHTML='<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">Your journal awaits</div><div class="empty-text">Tap "+ New" to begin<br>recording your travels</div></div>';return}
+    list.innerHTML=entries.map((e,idx)=>{
+      let photos=[];try{photos=e.photo_urls?JSON.parse(e.photo_urls):[]}catch(_){}
+      const preview=e.transcript?e.transcript.substring(0,90)+(e.transcript.length>90?'…':''):'';
+      const pols=photos.slice(0,4).map(u=>`<div class="pol-mini"><img src="${u}" loading="lazy"></div>`).join('');
+      return`<div class="entry-card" onclick="showDetail('${e.id}')">
+        <div class="stamp-border"></div>
+        <div class="card-tape ${idx%2===0?'':'alt'}"></div>
+        <div class="entry-card-inner">
+          ${photos.length?`<div class="entry-polaroids">${pols}</div>`:''}
+          <div class="entry-body">
+            <div class="entry-top">
+              <div><div class="entry-date">${fmtDate(e.entry_date)}</div>${e.location_tag?`<div class="entry-loc">📍 ${e.location_tag}</div>`:''}</div>
+              <div class="entry-badges">${e.mood?`<span style="font-size:17px">${e.mood}</span>`:''}${e.weather?`<span class="badge">${e.weather}</span>`:''}</div>
+            </div>
+            ${preview?`<div class="entry-text">${preview}</div>`:''}
+          </div>
+          <div class="entry-footer">${photos.length?`<span class="entry-stat">📸 ${photos.length}</span>`:''}${e.transcript?`<span class="entry-stat">✍ ${e.transcript.split(' ').length} words</span>`:''}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){list.innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Could not load</div></div>'}
+}
+
+async function loadEntryDetail(id){
+  showLoading('opening...');
+  try{
+    const r=await sb.q('journal_entries',{select:'*',eq:{id}});
+    hideLoading();if(!r||r.length===0)return;
+    const e=r[0];currentEntry=e;
+    document.getElementById('detailDate').textContent=fmtDate(e.entry_date);
+    document.getElementById('detailLoc').textContent=e.location_tag?'📍 '+e.location_tag:'';
+    document.getElementById('detailMood').textContent=e.mood||'';
+    document.getElementById('detailWeather').textContent=e.weather||'';
+    document.getElementById('detailText').textContent=e.transcript||'(no entry)';
+    let photos=[];try{photos=e.photo_urls?JSON.parse(e.photo_urls):[]}catch(_){}
+    document.getElementById('detailPhotos').innerHTML=photos.map(u=>`<div class="pol-lg"><img src="${u}" loading="lazy"></div>`).join('');
+  }catch(e){hideLoading();showToast('Could not load','error')}
+}
+
+async function deleteEntry(){
+  if(!currentEntry)return;
+  if(!confirm('Delete this entry?'))return;
+  showLoading('deleting...');
+  await sb.del('journal_entries',currentEntry.id);
+  hideLoading();showToast('Deleted','success');
+  setTimeout(()=>showTab('journalView',0),1000);
+}
+
+// ── EXPENSES ──
+function selCat(el){document.querySelectorAll('.cat-chip').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');selCatVal=el.dataset.cat}
+function showExpenseModal(){document.getElementById('expAmount').value='';document.getElementById('expDesc').value='';document.getElementById('expDate').value=new Date().toISOString().split('T')[0];document.getElementById('expenseModal').classList.add('show')}
+function closeExpenseModal(){document.getElementById('expenseModal').classList.remove('show')}
+
+async function saveBudget(){
+  const v=parseFloat(document.getElementById('budgetInput').value);
+  if(isNaN(v)||v<=0){showToast('Enter a valid budget','error');return}
+  tripBudget=v;
+  localStorage.setItem('tj_budget',v);
+  updateBudgetBar();showToast('Budget saved ✦','success');
+  document.getElementById('budgetInput').value='';
+}
+
+function updateBudgetBar(){
+  const budget=tripBudget||parseFloat(localStorage.getItem('tj_budget'))||0;
+  tripBudget=budget;
+}
+
+async function saveExpense(){
+  const amount=parseFloat(document.getElementById('expAmount').value);
+  const desc=document.getElementById('expDesc').value.trim();
+  const date=document.getElementById('expDate').value;
+  if(isNaN(amount)||amount<=0){showToast('Enter a valid amount','error');return}
+  showLoading('saving...');
+  await sb.ins('trip_expenses',{amount,description:desc||null,category:selCatVal,expense_date:date,created_at:new Date().toISOString()});
+  hideLoading();closeExpenseModal();showToast('Expense saved ✦','success');loadExpenses();
+}
+
+async function loadExpenses(){
+  const list=document.getElementById('expensesList');
+  list.innerHTML='<div style="text-align:center;padding:20px"><div class="loading-spinner" style="margin:0 auto"></div></div>';
+  try{
+    const data=await sb.q('trip_expenses',{select:'*',order:'expense_date.desc,created_at.desc'});
+    const expenses=data||[];
+    const total=expenses.reduce((s,e)=>s+(e.amount||0),0);
+    const budget=parseFloat(localStorage.getItem('tj_budget'))||0;
+    tripBudget=budget;
+    document.getElementById('budgetSpent').textContent=`RM ${total.toFixed(2)}`;
+    document.getElementById('budgetTotalLabel').textContent=budget?`RM ${budget.toFixed(2)}`:'Not set';
+    if(budget>0){
+      const pct=Math.min((total/budget)*100,100);
+      document.getElementById('budgetBarFill').style.width=pct+'%';
+      document.getElementById('budgetBarFill').className='budget-bar-fill'+(total>budget?' over':'');
+      const rem=budget-total;
+      document.getElementById('budgetRemaining').textContent=rem>=0?`RM ${rem.toFixed(2)} remaining`:`Over budget by RM ${Math.abs(rem).toFixed(2)}`;
+    }else{document.getElementById('budgetBarFill').style.width='0%';document.getElementById('budgetRemaining').textContent=''}
+    if(budget&&document.getElementById('budgetInput').placeholder)document.getElementById('budgetInput').placeholder=`Current: RM ${budget}`;
+    if(expenses.length===0){list.innerHTML='<div class="empty-state"><div class="empty-icon">¥</div><div class="empty-title">No expenses yet</div><div class="empty-text">Tap "+ Add" to log your first expense</div></div>';return}
+    list.innerHTML=expenses.map(e=>`
+      <div class="exp-item">
+        <span class="exp-cat-icon">${e.category.split(' ')[0]}</span>
+        <div class="exp-info">
+          <div class="exp-desc">${e.description||e.category}</div>
+          <div class="exp-meta">${e.category} · ${fmtDate(e.expense_date)}</div>
+        </div>
+        <div class="exp-amount">RM ${(e.amount||0).toFixed(2)}</div>
+        <button class="exp-del" onclick="delExpense('${e.id}')">🗑</button>
+      </div>`).join('');
+  }catch(e){list.innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Could not load</div></div>'}
+}
+
+async function delExpense(id){
+  if(!confirm('Delete this expense?'))return;
+  showLoading('deleting...');
+  await sb.del('trip_expenses',id);
+  hideLoading();showToast('Deleted','success');loadExpenses();
+}
+
+function convertCurrency(){
+  const jpy=parseFloat(document.getElementById('jpyInput').value)||0;
+  const rate=0.0294; // ¥1 = RM 0.0294
+  document.getElementById('myrResult').textContent=`RM ${(jpy*rate).toFixed(2)}`;
+}
+
+// ── TRIP / HIGHLIGHTS / FOOD / PACKING ──
+async function loadTrip(){
+  // Load rating
+  const r=parseInt(localStorage.getItem('tj_rating'))||0;
+  tripRating=r;renderStars(r);
+  // Load highlights
+  const hl=JSON.parse(localStorage.getItem('tj_highlights')||'[]');
+  renderHighlights(hl);
+  // Load food
+  const food=JSON.parse(localStorage.getItem('tj_food')||'[]');
+  renderFood(food);
+  // Load packing
+  const pack=JSON.parse(localStorage.getItem('tj_packing')||'[]');
+  renderPacking(pack);
+}
+
+function rateStar(n){
+  tripRating=n;localStorage.setItem('tj_rating',n);renderStars(n);
+  const labels=['','😕 Not great','😐 It was okay','😊 Pretty good','😄 Really enjoyed it','🤩 Best trip ever!'];
+  document.getElementById('ratingLabel').textContent=labels[n];
+  showToast('Rating saved ✦','success');
+}
+function renderStars(n){document.querySelectorAll('.star-btn').forEach((b,i)=>b.classList.toggle('active',i<n))}
+
+function addHighlight(){
+  const t=document.getElementById('highlightInput').value.trim();
+  const cat=document.getElementById('highlightCat').value;
+  if(!t)return;
+  const hl=JSON.parse(localStorage.getItem('tj_highlights')||'[]');
+  hl.unshift({cat,text:t,id:Date.now()});
+  localStorage.setItem('tj_highlights',JSON.stringify(hl));
+  document.getElementById('highlightInput').value='';
+  renderHighlights(hl);showToast('Highlight added ✦','success');
+}
+function renderHighlights(hl){
+  document.getElementById('highlightsList').innerHTML=hl.length?hl.map(h=>`
+    <div class="highlight-item">
+      <div class="highlight-label">${h.cat}</div>
+      <div class="highlight-text">${h.text}</div>
+      <button onclick="delHighlight(${h.id})" style="position:absolute;top:10px;right:10px;background:none;border:none;font-size:13px;color:var(--ink3);cursor:pointer">✕</button>
+    </div>`).join(''):'<div style="padding:8px 16px 12px;font-size:13px;color:var(--ink3);font-style:italic">No highlights yet — add your best moments!</div>';
+}
+function delHighlight(id){
+  const hl=JSON.parse(localStorage.getItem('tj_highlights')||'[]').filter(h=>h.id!==id);
+  localStorage.setItem('tj_highlights',JSON.stringify(hl));renderHighlights(hl);
+}
+
+function addFood(){
+  const t=document.getElementById('foodInput').value.trim();if(!t)return;
+  const food=JSON.parse(localStorage.getItem('tj_food')||'[]');
+  food.push({text:t,tried:false,id:Date.now()});
+  localStorage.setItem('tj_food',JSON.stringify(food));
+  document.getElementById('foodInput').value='';renderFood(food);
+}
+function renderFood(food){
+  document.getElementById('foodList').innerHTML=food.length?food.map(f=>`
+    <div class="food-item ${f.tried?'tried':''}" onclick="toggleFood(${f.id})">
+      <span class="food-emoji">${f.tried?'✅':'🍱'}</span>
+      <span class="food-text">${f.text}</span>
+      <button onclick="event.stopPropagation();delFood(${f.id})" class="food-del">✕</button>
+    </div>`).join(''):'<div style="padding:8px 16px 12px;font-size:13px;color:var(--ink3);font-style:italic">Add foods you want to try!</div>';
+}
+function toggleFood(id){
+  const food=JSON.parse(localStorage.getItem('tj_food')||'[]').map(f=>f.id===id?{...f,tried:!f.tried}:f);
+  localStorage.setItem('tj_food',JSON.stringify(food));renderFood(food);
+}
+function delFood(id){
+  const food=JSON.parse(localStorage.getItem('tj_food')||'[]').filter(f=>f.id!==id);
+  localStorage.setItem('tj_food',JSON.stringify(food));renderFood(food);
+}
+
+// Default packing items
+const DEFAULT_PACK=[
+  {text:'Passport',cat:'Documents',checked:false,id:1},{text:'Travel insurance docs',cat:'Documents',checked:false,id:2},
+  {text:'Flight tickets (printed/saved)',cat:'Documents',checked:false,id:3},{text:'Hotel confirmation',cat:'Documents',checked:false,id:4},
+  {text:'Cash & card',cat:'Money',checked:false,id:5},{text:'Phone charger',cat:'Electronics',checked:false,id:6},
+  {text:'Power bank',cat:'Electronics',checked:false,id:7},{text:'Universal adapter',cat:'Electronics',checked:false,id:8},
+  {text:'Medications',cat:'Health',checked:false,id:9},{text:'First aid kit',cat:'Health',checked:false,id:10},
+  {text:'Comfortable walking shoes',cat:'Clothing',checked:false,id:11},{text:'Rain jacket / umbrella',cat:'Clothing',checked:false,id:12},
+];
+function addPackItem(){
+  const t=document.getElementById('packInput').value.trim();if(!t)return;
+  const pack=JSON.parse(localStorage.getItem('tj_packing')||JSON.stringify(DEFAULT_PACK));
+  pack.push({text:t,cat:'Custom',checked:false,id:Date.now()});
+  localStorage.setItem('tj_packing',JSON.stringify(pack));
+  document.getElementById('packInput').value='';renderPacking(pack);
+}
+function renderPacking(pack){
+  if(!pack||pack.length===0){
+    localStorage.setItem('tj_packing',JSON.stringify(DEFAULT_PACK));pack=DEFAULT_PACK;
+  }
+  const done=pack.filter(p=>p.checked).length;
+  document.getElementById('packingList').innerHTML=`
+    <div style="padding:6px 16px 10px;font-family:'Caveat',cursive;font-size:13px;color:var(--ink3)">${done}/${pack.length} packed</div>`+
+    pack.map(p=>`
+    <div class="check-item ${p.checked?'checked':''}" onclick="togglePack(${p.id})">
+      <div class="check-box">${p.checked?'✓':''}</div>
+      <div style="flex:1"><div class="check-text">${p.text}</div><div class="check-category">${p.cat}</div></div>
+      <button onclick="event.stopPropagation();delPack(${p.id})" style="background:none;border:none;font-size:13px;color:var(--ink3);cursor:pointer">✕</button>
+    </div>`).join('');
+}
+function togglePack(id){
+  const pack=JSON.parse(localStorage.getItem('tj_packing')||JSON.stringify(DEFAULT_PACK)).map(p=>p.id===id?{...p,checked:!p.checked}:p);
+  localStorage.setItem('tj_packing',JSON.stringify(pack));renderPacking(pack);
+}
+function delPack(id){
+  const pack=JSON.parse(localStorage.getItem('tj_packing')||JSON.stringify(DEFAULT_PACK)).filter(p=>p.id!==id);
+  localStorage.setItem('tj_packing',JSON.stringify(pack));renderPacking(pack);
+}
+
+// ── PLACES ──
+let placeTypeVal='restaurant',placeStarVal=3,placePhotosArr=[];
+let allPlaces=[],currentFilter='all';
+
+function showPlaceModal(){
+  document.getElementById('placeName').value='';
+  document.getElementById('placeNotes').value='';
+  document.getElementById('placeCity').value='';
+  document.getElementById('placeDate').value=new Date().toISOString().split('T')[0];
+  placePhotosArr=[];placeTypeVal='restaurant';placeStarVal=3;
+  renderPlacePhotosGrid();
+  document.querySelectorAll('#placeTypePicker .cat-chip').forEach(c=>c.classList.toggle('selected',c.dataset.t==='restaurant'));
+  selPlaceStar(3);
+  document.getElementById('placeModal').classList.add('show');
+}
+function closePlaceModal(){document.getElementById('placeModal').classList.remove('show')}
+function selPlaceType(el){document.querySelectorAll('#placeTypePicker .cat-chip').forEach(c=>c.classList.remove('selected'));el.classList.add('selected');placeTypeVal=el.dataset.t}
+function selPlaceStar(n){
+  placeStarVal=n;
+  document.querySelectorAll('#placeStarRow button').forEach((b,i)=>{b.style.opacity=i<n?'1':'0.3'});
+}
+function addPlacePhotos(e){
+  Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=(ev)=>{placePhotosArr.push({file:f,preview:ev.target.result});renderPlacePhotosGrid()};r.readAsDataURL(f)});
+  e.target.value='';
+}
+function renderPlacePhotosGrid(){
+  const g=document.getElementById('placePhotosGrid');g.innerHTML='';
+  placePhotosArr.forEach((p,i)=>{const d=document.createElement('div');d.className='pol-thumb';d.innerHTML=`<img src="${p.preview}"><button class="rm-photo" onclick="placePhotosArr.splice(${i},1);renderPlacePhotosGrid()">✕</button>`;g.appendChild(d)});
+  const a=document.createElement('div');a.className='add-pol';a.innerHTML='<span class="plus">+</span><span>Add</span>';a.onclick=()=>document.getElementById('placePhotoIn').click();g.appendChild(a);
+}
+
+async function savePlace(){
+  const name=document.getElementById('placeName').value.trim();
+  if(!name){showToast('Enter a place name','error');return}
+  showLoading('saving...');
+  try{
+    const urls=[];
+    for(const p of placePhotosArr){const url=await sb.up(p.file,`place_${Date.now()}_${Math.random().toString(36).substr(2,6)}.${p.file.name.split('.').pop()}`);if(url)urls.push(url)}
+    await sb.ins('trip_places',{
+      name,type:placeTypeVal,rating:placeStarVal,
+      notes:document.getElementById('placeNotes').value.trim()||null,
+      city:document.getElementById('placeCity').value.trim()||null,
+      visited_date:document.getElementById('placeDate').value||null,
+      photo_urls:urls.length?JSON.stringify(urls):null,
+      created_at:new Date().toISOString()
+    });
+    hideLoading();closePlaceModal();showToast('Place saved ✦','success');
+    placePhotosArr=[];loadPlaces();
+  }catch(e){hideLoading();showToast('Could not save','error')}
+}
+
+async function loadPlaces(){
+  const list=document.getElementById('placesList');
+  list.innerHTML='<div style="text-align:center;padding:20px"><div class="loading-spinner" style="margin:0 auto"></div></div>';
+  try{
+    const data=await sb.q('trip_places',{select:'*',order:'visited_date.desc,created_at.desc'});
+    allPlaces=data||[];
+    renderPlaces(currentFilter);
+  }catch(e){list.innerHTML='<div class="empty-state"><div class="empty-icon">📍</div><div class="empty-title">Could not load</div></div>'}
+}
+
+function filterPlaces(type,el){
+  currentFilter=type;
+  document.querySelectorAll('.type-chip').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  renderPlaces(type);
+}
+
+function renderPlaces(filter){
+  const list=document.getElementById('placesList');
+  const filtered=filter==='all'?allPlaces:allPlaces.filter(p=>p.type===filter);
+  const typeIcons={restaurant:'🍜',cafe:'☕',hotel:'🏨',attraction:'🏯',shop:'🛍'};
+  const typeLabels={restaurant:'Restaurant',cafe:'Cafe',hotel:'Hotel',attraction:'Attraction',shop:'Shop'};
+  document.getElementById('placesStat').textContent=`${filtered.length} place${filtered.length!==1?'s':''}${filter!=='all'?' · '+typeLabels[filter]:''}`;
+  if(filtered.length===0){
+    list.innerHTML='<div class="empty-state"><div class="empty-icon">📍</div><div class="empty-title">No places yet</div><div class="empty-text">Tap "+ Add" to log a restaurant,<br>cafe, hotel or attraction</div></div>';
+    return;
+  }
+  list.innerHTML=filtered.map(p=>{
+    let photos=[];try{photos=p.photo_urls?JSON.parse(p.photo_urls):[]}catch(_){}
+    const stars='⭐'.repeat(p.rating||0)+'☆'.repeat(5-(p.rating||0));
+    return`<div class="place-card ${p.type||'restaurant'}" onclick="showPlaceDetail('${p.id}')">
+      <div class="place-top">
+        <div>
+          <div class="place-name">${typeIcons[p.type]||'📍'} ${p.name}</div>
+          <div class="place-type">${typeLabels[p.type]||p.type}${p.city?' · '+p.city:''}</div>
+        </div>
+        <div class="place-stars">${stars}</div>
+      </div>
+      ${p.notes?`<div class="place-notes">"${p.notes.substring(0,80)}${p.notes.length>80?'…':''}"</div>`:''}
+      ${p.visited_date?`<div class="place-meta"><span>📅 ${fmtDate(p.visited_date)}</span></div>`:''}
+      ${photos.length?`<div class="place-photos">${photos.slice(0,4).map(u=>`<img src="${u}" loading="lazy" onerror="this.style.display='none'">`).join('')}</div>`:''}
+    </div>`;
+  }).join('');
+}
+
+let currentPlace=null;
+function showPlaceDetail(id){
+  const p=allPlaces.find(x=>x.id===id);if(!p)return;
+  currentPlace=p;
+  const typeIcons={restaurant:'🍜',cafe:'☕',hotel:'🏨',attraction:'🏯',shop:'🛍'};
+  const typeLabels={restaurant:'Restaurant',cafe:'Cafe',hotel:'Hotel',attraction:'Attraction',shop:'Shop'};
+  let photos=[];try{photos=p.photo_urls?JSON.parse(p.photo_urls):[]}catch(_){}
+  const stars='⭐'.repeat(p.rating||0)+'☆'.repeat(5-(p.rating||0));
+  const html=`
+    <div style="text-align:center;padding:10px 0 14px">
+      <div style="font-size:36px;margin-bottom:6px">${typeIcons[p.type]||'📍'}</div>
+      <div style="font-family:'Zen Antique',serif;font-size:20px;color:var(--ink);letter-spacing:1px;margin-bottom:4px">${p.name}</div>
+      <div style="font-family:'Caveat',cursive;font-size:13px;color:var(--ink3);letter-spacing:1px;text-transform:uppercase">${typeLabels[p.type]||p.type}${p.city?' · '+p.city:''}</div>
+      <div style="font-size:18px;margin-top:8px;letter-spacing:2px">${stars}</div>
+    </div>
+    ${photos.length?`<div style="display:flex;gap:8px;overflow-x:auto;margin-bottom:14px;padding-bottom:4px;-webkit-overflow-scrolling:touch">${photos.map(u=>`<img src="${u}" style="height:160px;width:auto;max-width:80vw;border-radius:2px;flex-shrink:0;object-fit:cover;box-shadow:2px 2px 8px var(--shadow2)" loading="lazy">`).join('')}</div>`:''}
+    ${p.notes?`<div style="background:var(--cream2);border-left:3px solid var(--gold);padding:14px 16px;font-size:14px;line-height:1.7;color:var(--ink);font-style:italic;margin-bottom:10px">"${p.notes}"</div>`:''}
+    ${p.visited_date?`<div style="font-family:'Caveat',cursive;font-size:13px;color:var(--ink3);text-align:center;margin-bottom:8px">Visited ${fmtDate(p.visited_date)}</div>`:''}
+  `;
+  document.getElementById('placeDetailContent').innerHTML=html;
+  document.getElementById('placeDetailModal').classList.add('show');
+}
+
+async function deletePlace(){
+  if(!currentPlace)return;
+  if(!confirm('Delete this place?'))return;
+  showLoading('deleting...');
+  await sb.del('trip_places',currentPlace.id);
+  hideLoading();
+  document.getElementById('placeDetailModal').classList.remove('show');
+  showToast('Deleted','success');loadPlaces();
+}
+
+// ── HELPERS ──
+function fmtDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-MY',{weekday:'short',day:'numeric',month:'long',year:'numeric'})}
+function showLoading(msg='loading...'){document.getElementById('loadingText').textContent=msg;document.getElementById('loadingOverlay').classList.add('show')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+let _tt;
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+type;clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3000)}
+
+// ── INIT ──
+function init(){loadEntries()}
+
+if(sessionStorage.getItem('tj_auth')==='1'){
+  document.getElementById('lockScreen').classList.add('hidden');
+  init();
+}else{
+  setTimeout(()=>document.getElementById('lockInput').focus(),300);
+}
+</script>
+</body>
+</html>
