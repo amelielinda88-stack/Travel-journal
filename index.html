@@ -736,7 +736,6 @@
       <textarea 
         id="transcriptText" 
         placeholder="Your voice transcript will appear here... or write directly ✨"
-        rows="6"
       ></textarea>
     </div>
 
@@ -854,11 +853,12 @@ function showFeed() {
 }
 
 function showNewEntry() {
-  // Reset form
+  // Reset form completely
   const today = new Date().toISOString().split('T')[0];
   document.getElementById('entryDate').value = today;
   document.getElementById('entryLocation').value = '';
-  document.getElementById('transcriptText').value = '';
+  const ta = document.getElementById('transcriptText');
+  ta.value = '';
   selectedPhotos = [];
   finalTranscript = '';
   renderPhotosGrid();
@@ -877,11 +877,13 @@ function setupSpeechRecognition() {
   r.onresult = (e) => {
     let interim = '';
     for (let i = e.resultIndex; i < e.results.length; i++) {
-      const t = e.results[i].transcript;
-      if (e.results[i].isFinal) finalTranscript += t + ' ';
+      const result = e.results[i];
+      const t = (result[0] && result[0].transcript) ? result[0].transcript : '';
+      if (result.isFinal) finalTranscript += t + ' ';
       else interim += t;
     }
-    document.getElementById('transcriptText').value = finalTranscript + interim;
+    const ta = document.getElementById('transcriptText');
+    ta.value = (finalTranscript + interim).trim();
   };
   r.onerror = (e) => {
     if (e.error !== 'aborted') {
