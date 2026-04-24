@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f7f3ee">
+<title>旅 · Travel Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Zen+Antique&family=Noto+Serif+JP:wght@300;400;500&family=Caveat:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --cream:#f7f3ee;--cream2:#efe9e0;--cream3:#e8dfd3;
+  --ink:#2a2118;--ink2:#5c4f42;--ink3:#9c8b7a;
+  --line:rgba(92,79,66,0.15);
+  --red:#c0392b;--sage:#7a9e7e;--dusty:#b5a49a;
+  --shadow:rgba(42,33,24,0.10);--shadow2:rgba(42,33,24,0.18);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Noto Serif JP',serif;background:var(--cream);color:var(--ink);min-height:100dvh;overflow-x:hidden}
+body::after{content:'';position:fixed;inset:0;pointer-events:none;z-index:999;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");opacity:0.7}
+.view{display:none;min-height:100dvh}.view.active{display:block}
+
+/* WASHI TAPE STRIPS */
+.washi{display:block;height:22px;width:100%;position:relative;overflow:hidden}
+.washi::before{content:'';position:absolute;inset:0;background-size:22px 22px;opacity:0.55}
+.washi-sage::before{background-color:rgba(122,158,126,0.45);background-image:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(255,255,255,0.3) 8px,rgba(255,255,255,0.3) 9px)}
+.washi-dusty::before{background-color:rgba(181,164,154,0.5);background-image:repeating-linear-gradient(90deg,transparent,transparent 6px,rgba(255,255,255,0.25) 6px,rgba(255,255,255,0.25) 7px)}
+.washi-red::before{background-color:rgba(192,57,43,0.22);background-image:repeating-linear-gradient(90deg,transparent,transparent 10px,rgba(255,255,255,0.2) 10px,rgba(255,255,255,0.2) 11px)}
+
+/* HEADER */
+.app-header{background:var(--cream);padding:0;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--line),0 4px 12px var(--shadow)}
+.header-inner{display:flex;align-items:center;justify-content:space-between;padding:14px 18px 12px}
+.app-title{font-family:'Zen Antique',serif;font-size:22px;color:var(--ink);letter-spacing:2px;line-height:1}
+.app-title span{font-family:'Caveat',cursive;font-size:13px;color:var(--ink3);display:block;letter-spacing:1px;margin-top:3px;font-weight:400}
+.new-entry-btn{background:var(--ink);color:var(--cream);border:none;border-radius:2px;padding:10px 16px;font-family:'Caveat',cursive;font-size:16px;font-weight:600;cursor:pointer;letter-spacing:0.5px;box-shadow:2px 2px 0 var(--ink2);transition:all 0.15s;white-space:nowrap}
+.new-entry-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink2)}
+
+/* FEED */
+#feedView{padding:18px 16px 100px}
+.empty-state{text-align:center;padding:70px 30px}
+.empty-icon{font-size:48px;margin-bottom:16px;opacity:0.6}
+.empty-title{font-family:'Zen Antique',serif;font-size:20px;color:var(--ink2);margin-bottom:8px;letter-spacing:1px}
+.empty-text{font-size:13px;color:var(--ink3);line-height:1.8;font-style:italic}
+
+/* ENTRY CARD — postage stamp */
+.entry-card{background:var(--cream);margin-bottom:28px;position:relative;cursor:pointer;transition:transform 0.18s;border-radius:2px;padding:3px;filter:drop-shadow(2px 3px 8px var(--shadow2))}
+.entry-card:active{transform:scale(0.985)}
+.stamp-border{position:absolute;inset:0;pointer-events:none;background:radial-gradient(circle at 0% 50%,transparent 6px,var(--cream2) 6px) left/1px 14px repeat-y,radial-gradient(circle at 100% 50%,transparent 6px,var(--cream2) 6px) right/1px 14px repeat-y,radial-gradient(circle at 50% 0%,transparent 6px,var(--cream2) 6px) top/14px 1px repeat-x,radial-gradient(circle at 50% 100%,transparent 6px,var(--cream2) 6px) bottom/14px 1px repeat-x;border-radius:2px}
+.card-tape{position:absolute;top:-10px;left:50%;transform:translateX(-50%) rotate(-1.5deg);width:54px;height:20px;z-index:3;background-color:rgba(122,158,126,0.42);background-image:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(255,255,255,0.3) 8px,rgba(255,255,255,0.3) 9px);box-shadow:0 1px 3px var(--shadow)}
+.card-tape.alt{background-color:rgba(181,164,154,0.5);transform:translateX(-50%) rotate(1deg)}
+.card-inner{background:var(--cream);border:1px solid var(--line);overflow:hidden;position:relative}
+
+/* Polaroid thumbnails */
+.card-polaroids{display:flex;gap:0;padding:14px 14px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.card-polaroids::-webkit-scrollbar{display:none}
+.polaroid-mini{flex-shrink:0;background:white;padding:5px 5px 14px;box-shadow:1px 2px 5px var(--shadow2);margin-right:8px;transform:rotate(-2deg)}
+.polaroid-mini:nth-child(even){transform:rotate(1.5deg)}
+.polaroid-mini img{width:80px;height:70px;object-fit:cover;display:block}
+
+.card-body{padding:12px 16px 10px}
+.card-top-row{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:8px}
+.card-date{font-family:'Caveat',cursive;font-size:16px;color:var(--ink);font-weight:600;letter-spacing:0.3px}
+.card-location{font-size:11px;color:var(--ink3);font-style:italic;margin-top:2px;letter-spacing:0.3px}
+.card-badges{display:flex;gap:5px;align-items:center;flex-wrap:wrap;justify-content:flex-end}
+.mood-badge{font-size:18px;line-height:1}
+.weather-badge{font-size:10px;color:var(--ink3);border:1px solid var(--line);padding:2px 7px;border-radius:20px;font-family:'Caveat',cursive;letter-spacing:0.5px}
+.card-text{font-size:13px;line-height:1.75;color:var(--ink2);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-style:italic}
+.card-footer{padding:8px 16px 12px;display:flex;gap:10px;border-top:1px solid var(--line);margin-top:8px}
+.card-stat{font-size:11px;color:var(--ink3);letter-spacing:0.3px}
+
+/* ENTRY FORM */
+#entryView{padding-bottom:40px}
+.entry-header{background:var(--cream);padding:0;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--line),0 4px 12px var(--shadow)}
+.entry-header-inner{display:flex;align-items:center;gap:10px;padding:13px 16px 11px}
+.back-btn{background:none;border:none;font-size:20px;cursor:pointer;color:var(--ink2);padding:4px 6px;display:flex;align-items:center}
+.entry-header-title{font-family:'Zen Antique',serif;font-size:18px;color:var(--ink);flex:1;letter-spacing:1px}
+.save-btn{background:var(--ink);color:var(--cream);border:none;border-radius:2px;padding:8px 18px;font-family:'Caveat',cursive;font-size:16px;font-weight:600;cursor:pointer;letter-spacing:0.5px;box-shadow:2px 2px 0 var(--ink2);transition:all 0.15s}
+.save-btn:active{transform:translate(1px,1px);box-shadow:1px 1px 0 var(--ink2)}
+.save-btn:disabled{opacity:0.4;cursor:not-allowed}
+.entry-form{padding:18px 16px}
+.section-label{font-family:'Caveat',cursive;font-size:13px;color:var(--ink3);letter-spacing:2px;text-transform:uppercase;margin-bottom:10px;margin-top:20px;display:flex;align-items:center;gap:8px}
+.section-label::before{content:'—';opacity:0.4}
+
+.meta-row{display:flex;gap:8px;margin-bottom:4px}
+.meta-field{flex:1;background:white;border:1px solid var(--line);padding:10px 12px;display:flex;align-items:center;gap:7px}
+.meta-field input{border:none;background:none;font-family:'Noto Serif JP',serif;font-size:13px;color:var(--ink);width:100%;outline:none}
+.meta-field input::placeholder{color:var(--ink3);font-style:italic}
+.meta-icon{font-size:14px;flex-shrink:0;opacity:0.7}
+
+/* MOOD */
+.mood-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:4px}
+.mood-opt{width:42px;height:42px;border-radius:50%;border:1.5px solid var(--line);background:white;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
+.mood-opt.selected{border-color:var(--ink2);background:var(--cream2);box-shadow:0 2px 6px var(--shadow2);transform:scale(1.15)}
+
+/* WEATHER */
+.weather-row{display:flex;gap:6px;margin-bottom:4px;flex-wrap:wrap}
+.weather-opt{border:1px solid var(--line);background:white;padding:6px 12px;font-family:'Caveat',cursive;font-size:14px;color:var(--ink2);cursor:pointer;letter-spacing:0.5px;transition:all 0.15s;display:flex;align-items:center;gap:5px}
+.weather-opt.selected{background:var(--ink);color:var(--cream);border-color:var(--ink)}
+
+/* VOICE */
+.voice-area{background:white;border:1px solid var(--line);padding:20px;text-align:center;margin-bottom:4px;position:relative;overflow:hidden}
+.voice-area::before{content:'';position:absolute;top:0;left:0;right:0;height:8px;background-color:rgba(122,158,126,0.38);background-image:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(255,255,255,0.3) 8px,rgba(255,255,255,0.3) 9px)}
+.record-btn{width:64px;height:64px;border-radius:50%;border:none;background:var(--ink);color:var(--cream);font-size:24px;cursor:pointer;margin:0 auto 10px;display:flex;align-items:center;justify-content:center;box-shadow:3px 3px 0 var(--ink2);transition:all 0.15s}
+.record-btn.recording{background:var(--red);box-shadow:3px 3px 0 #922b21;animation:pulse 1.2s infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.07)}}
+.record-btn:active{transform:translate(2px,2px);box-shadow:1px 1px 0 var(--ink2)}
+.record-status{font-family:'Caveat',cursive;font-size:16px;color:var(--ink3);letter-spacing:0.5px}
+.record-status.active{color:var(--red);font-weight:600}
+.record-hint{font-size:11px;color:var(--ink3);margin-top:4px;opacity:0.7;font-style:italic}
+
+/* TRANSCRIPT */
+.transcript-wrap{background:white;border:1px solid var(--line);position:relative;overflow:hidden}
+.transcript-wrap::before{content:'';position:absolute;top:0;left:0;right:0;height:7px;background-color:rgba(181,164,154,0.45);background-image:repeating-linear-gradient(90deg,transparent,transparent 6px,rgba(255,255,255,0.25) 6px,rgba(255,255,255,0.25) 7px)}
+#transcriptText{width:100%;min-height:140px;border:none;background:none;font-family:'Caveat',cursive;font-size:19px;color:var(--ink);line-height:1.8;resize:none;outline:none;padding:18px 16px 14px;background-image:repeating-linear-gradient(transparent,transparent 35px,rgba(92,79,66,0.1) 35px,rgba(92,79,66,0.1) 36px);background-position:0 8px}
+#transcriptText::placeholder{color:var(--ink3);opacity:0.6;font-style:italic}
+
+/* PHOTOS — polaroid style */
+.photos-grid{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:4px}
+.photo-polaroid{background:white;padding:6px 6px 20px;box-shadow:2px 3px 8px var(--shadow2);position:relative;transform:rotate(-2deg);transition:transform 0.2s}
+.photo-polaroid:nth-child(even){transform:rotate(1.5deg)}
+.photo-polaroid img{width:90px;height:80px;object-fit:cover;display:block}
+.remove-photo{position:absolute;top:-7px;right:-7px;width:22px;height:22px;border-radius:50%;background:var(--red);color:white;border:none;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:1px 1px 3px var(--shadow2)}
+.add-photo-btn{width:90px;background:white;border:1.5px dashed var(--line);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;cursor:pointer;color:var(--ink3);font-family:'Caveat',cursive;font-size:13px;padding:20px 0;transition:background 0.15s;box-shadow:2px 3px 8px var(--shadow)}
+.add-photo-btn:active{background:var(--cream2)}
+.add-photo-btn .plus{font-size:20px;line-height:1}
+#photoInput{display:none}
+
+/* DETAIL VIEW */
+#detailView{background:var(--cream2)}
+.detail-header{background:var(--cream);padding:0;position:sticky;top:0;z-index:100;box-shadow:0 1px 0 var(--line),0 4px 12px var(--shadow)}
+.detail-header-inner{display:flex;align-items:center;gap:10px;padding:13px 16px 11px}
+.detail-header-info{flex:1}
+.detail-date{font-family:'Zen Antique',serif;font-size:17px;color:var(--ink);letter-spacing:1px}
+.detail-loc{font-size:11px;color:var(--ink3);font-style:italic;margin-top:2px;letter-spacing:0.3px}
+.delete-btn{background:none;border:none;font-size:18px;cursor:pointer;color:var(--ink3);padding:6px}
+.detail-washi{height:10px;width:100%;background-color:rgba(192,57,43,0.2);background-image:repeating-linear-gradient(90deg,transparent,transparent 10px,rgba(255,255,255,0.2) 10px,rgba(255,255,255,0.2) 11px)}
+
+/* Polaroid detail photos */
+.detail-polaroids{display:flex;gap:12px;padding:20px 18px 6px;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.detail-polaroids::-webkit-scrollbar{display:none}
+.polaroid-lg{flex-shrink:0;background:white;padding:8px 8px 26px;box-shadow:3px 4px 12px var(--shadow2);transform:rotate(-1.5deg)}
+.polaroid-lg:nth-child(even){transform:rotate(1deg)}
+.polaroid-lg img{width:160px;height:140px;object-fit:cover;display:block}
+.polaroid-caption{font-family:'Caveat',cursive;font-size:12px;color:var(--ink3);text-align:center;margin-top:6px;letter-spacing:0.3px}
+
+/* Detail journal page */
+.detail-page{margin:16px 14px 40px;background:white;border:1px solid var(--line);position:relative;overflow:hidden;box-shadow:3px 4px 12px var(--shadow2)}
+.detail-tape-l,.detail-tape-r{position:absolute;top:-4px;height:16px;width:50px;z-index:2;background-color:rgba(122,158,126,0.42);background-image:repeating-linear-gradient(90deg,transparent,transparent 8px,rgba(255,255,255,0.3) 8px,rgba(255,255,255,0.3) 9px)}
+.detail-tape-l{left:14px;transform:rotate(-1.5deg)}
+.detail-tape-r{right:14px;transform:rotate(1.5deg)}
+.detail-page-header{padding:18px 18px 10px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:flex-start}
+.detail-mood-weather{display:flex;gap:8px;align-items:center}
+.detail-mood{font-size:22px}
+.detail-weather{font-family:'Caveat',cursive;font-size:13px;color:var(--ink3);border:1px solid var(--line);padding:2px 10px;letter-spacing:0.5px}
+.detail-text{font-family:'Caveat',cursive;font-size:20px;color:var(--ink);line-height:1.8;padding:16px 18px 30px;white-space:pre-wrap;background-image:repeating-linear-gradient(transparent,transparent 35px,rgba(92,79,66,0.08) 35px,rgba(92,79,66,0.08) 36px);background-position:0 9px;min-height:160px;position:relative}
+.detail-text::before{content:'';position:absolute;left:36px;top:0;bottom:0;width:1px;background:rgba(192,57,43,0.2)}
+.stamp-decoration{position:absolute;bottom:14px;right:14px;border:1.5px solid var(--line);padding:4px 8px;font-family:'Zen Antique',serif;font-size:9px;color:var(--ink3);letter-spacing:2px;background:white;background-image:radial-gradient(circle at 0% 50%,transparent 3.5px,white 3.5px) left/1px 10px repeat-y,radial-gradient(circle at 100% 50%,transparent 3.5px,white 3.5px) right/1px 10px repeat-y,radial-gradient(circle at 50% 0%,transparent 3.5px,white 3.5px) top/10px 1px repeat-x,radial-gradient(circle at 50% 100%,transparent 3.5px,white 3.5px) bottom/10px 1px repeat-x}
+
+/* LOADING + TOAST */
+.loading-overlay{position:fixed;inset:0;background:rgba(247,243,238,0.88);display:none;align-items:center;justify-content:center;z-index:9000;flex-direction:column;gap:14px;backdrop-filter:blur(2px)}
+.loading-overlay.show{display:flex}
+.loading-spinner{width:36px;height:36px;border:2px solid var(--line);border-top-color:var(--ink2);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-family:'Caveat',cursive;font-size:18px;color:var(--ink3);font-style:italic;letter-spacing:0.5px}
+.toast{position:fixed;bottom:28px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:var(--cream);padding:10px 22px;font-family:'Caveat',cursive;font-size:16px;letter-spacing:0.5px;z-index:9999;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);box-shadow:3px 3px 0 var(--ink2);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--sage);box-shadow:3px 3px 0 #5a7a5e}
+.toast.error{background:var(--red);box-shadow:3px 3px 0 #922b21}
+::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--line);border-radius:2px}
+</style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">loading...</div>
+</div>
+<div class="toast" id="toast"></div>
+
+<!-- FEED -->
+<div class="view active" id="feedView">
+  <div class="app-header">
+    <div class="washi washi-sage"></div>
+    <div class="header-inner">
+      <div>
+        <div class="app-title">旅 Journey<span>my travel journal</span></div>
+      </div>
+      <button class="new-entry-btn" onclick="showNewEntry()">+ New Entry</button>
+    </div>
+  </div>
+  <div id="entriesList">
+    <div class="empty-state">
+      <div class="empty-icon">📖</div>
+      <div class="empty-title">Your journal awaits</div>
+      <div class="empty-text">Tap "+ New Entry" to begin<br>recording your travels</div>
+    </div>
+  </div>
+</div>
+
+<!-- NEW ENTRY -->
+<div class="view" id="entryView">
+  <div class="entry-header">
+    <div class="washi washi-dusty"></div>
+    <div class="entry-header-inner">
+      <button class="back-btn" onclick="showFeed()">←</button>
+      <div class="entry-header-title">New Entry</div>
+      <button class="save-btn" onclick="saveEntry()">Save</button>
+    </div>
+  </div>
+  <div class="entry-form">
+    <div class="section-label">Date &amp; Place</div>
+    <div class="meta-row">
+      <div class="meta-field"><span class="meta-icon">📅</span><input type="date" id="entryDate"></div>
+      <div class="meta-field"><span class="meta-icon">📍</span><input type="text" id="entryLocation" placeholder="Where are you?"></div>
+    </div>
+
+    <div class="section-label">Mood</div>
+    <div class="mood-row" id="moodRow">
+      <button class="mood-opt" data-mood="😊" onclick="selectMood(this)">😊</button>
+      <button class="mood-opt" data-mood="🥰" onclick="selectMood(this)">🥰</button>
+      <button class="mood-opt" data-mood="😌" onclick="selectMood(this)">😌</button>
+      <button class="mood-opt" data-mood="🤩" onclick="selectMood(this)">🤩</button>
+      <button class="mood-opt" data-mood="😴" onclick="selectMood(this)">😴</button>
+      <button class="mood-opt" data-mood="😅" onclick="selectMood(this)">😅</button>
+      <button class="mood-opt" data-mood="🥺" onclick="selectMood(this)">🥺</button>
+      <button class="mood-opt" data-mood="😤" onclick="selectMood(this)">😤</button>
+    </div>
+
+    <div class="section-label">Weather</div>
+    <div class="weather-row" id="weatherRow">
+      <button class="weather-opt" data-weather="☀️ Sunny" onclick="selectWeather(this)">☀️ Sunny</button>
+      <button class="weather-opt" data-weather="⛅ Cloudy" onclick="selectWeather(this)">⛅ Cloudy</button>
+      <button class="weather-opt" data-weather="🌧 Rainy" onclick="selectWeather(this)">🌧 Rainy</button>
+      <button class="weather-opt" data-weather="🌩 Stormy" onclick="selectWeather(this)">🌩 Stormy</button>
+      <button class="weather-opt" data-weather="❄️ Cold" onclick="selectWeather(this)">❄️ Cold</button>
+      <button class="weather-opt" data-weather="🌫 Misty" onclick="selectWeather(this)">🌫 Misty</button>
+    </div>
+
+    <div class="section-label">Voice Record</div>
+    <div class="voice-area">
+      <button class="record-btn" id="recordBtn" onclick="toggleRecording()">🎙️</button>
+      <div class="record-status" id="recordStatus">Tap to record</div>
+      <div class="record-hint">tap once to start · tap again to stop</div>
+    </div>
+
+    <div class="section-label">Journal Entry</div>
+    <div class="transcript-wrap">
+      <textarea id="transcriptText" placeholder="your voice will appear here · or write directly..."></textarea>
+    </div>
+
+    <div class="section-label">Photos</div>
+    <div class="photos-grid" id="photosGrid">
+      <div class="add-photo-btn" onclick="document.getElementById('photoInput').click()">
+        <span class="plus">+</span><span>Add</span>
+      </div>
+    </div>
+    <input type="file" id="photoInput" accept="image/*" multiple onchange="handlePhotoSelect(event)">
+  </div>
+</div>
+
+<!-- DETAIL -->
+<div class="view" id="detailView">
+  <div class="detail-header">
+    <div class="washi washi-red"></div>
+    <div class="detail-header-inner">
+      <button class="back-btn" onclick="showFeed()">←</button>
+      <div class="detail-header-info">
+        <div class="detail-date" id="detailDate"></div>
+        <div class="detail-loc" id="detailLoc"></div>
+      </div>
+      <button class="delete-btn" onclick="deleteEntry()">🗑</button>
+    </div>
+  </div>
+  <div class="detail-washi"></div>
+  <div class="detail-polaroids" id="detailPolaroids"></div>
+  <div class="detail-page">
+    <div class="detail-tape-l"></div>
+    <div class="detail-tape-r"></div>
+    <div class="detail-page-header">
+      <div class="detail-mood-weather">
+        <span class="detail-mood" id="detailMood"></span>
+        <span class="detail-weather" id="detailWeather"></span>
+      </div>
+    </div>
+    <div class="detail-text" id="detailText"></div>
+    <div class="stamp-decoration">旅の記録</div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL='https://uwgotfnwnbgqnwvumvxn.supabase.co';
+const SUPABASE_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3Z290Zm53bmJncW53dnVtdnhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5OTQwMzEsImV4cCI6MjA5MjU3MDAzMX0.SL6B4EN8Q32MXmdVySDGlPq7B-zFWPeGyWY15I73VNU';
+const sb={
+  async query(t,o={}){
+    let url=`${SUPABASE_URL}/rest/v1/${t}`;const p=[];
+    if(o.select)p.push(`select=${o.select}`);
+    if(o.order)p.push(`order=${o.order}`);
+    if(o.eq)Object.entries(o.eq).forEach(([k,v])=>p.push(`${k}=eq.${v}`));
+    if(p.length)url+='?'+p.join('&');
+    return(await fetch(url,{headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}})).json();
+  },
+  async insert(t,d){
+    return(await fetch(`${SUPABASE_URL}/rest/v1/${t}`,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':'application/json','Prefer':'return=representation'},body:JSON.stringify(d)})).json();
+  },
+  async delete(t,id){
+    return(await fetch(`${SUPABASE_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`}})).ok;
+  },
+  async uploadPhoto(file,path){
+    const r=await fetch(`${SUPABASE_URL}/storage/v1/object/journal-photos/${path}`,{method:'POST',headers:{'apikey':SUPABASE_KEY,'Authorization':`Bearer ${SUPABASE_KEY}`,'Content-Type':file.type},body:file});
+    return r.ok?`${SUPABASE_URL}/storage/v1/object/public/journal-photos/${path}`:null;
+  }
+};
+
+let currentEntry=null,selectedPhotos=[],recognition=null,isRecording=false,finalTranscript='',selectedMood='',selectedWeather='';
+
+function showView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.getElementById(id).classList.add('active');window.scrollTo(0,0)}
+function showFeed(){showView('feedView');loadEntries()}
+function showNewEntry(){
+  document.getElementById('entryDate').value=new Date().toISOString().split('T')[0];
+  document.getElementById('entryLocation').value='';
+  document.getElementById('transcriptText').value='';
+  selectedPhotos=[];finalTranscript='';selectedMood='';selectedWeather='';
+  document.querySelectorAll('.mood-opt').forEach(b=>b.classList.remove('selected'));
+  document.querySelectorAll('.weather-opt').forEach(b=>b.classList.remove('selected'));
+  renderPhotosGrid();stopRecording();showView('entryView');
+}
+function selectMood(btn){document.querySelectorAll('.mood-opt').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');selectedMood=btn.dataset.mood}
+function selectWeather(btn){document.querySelectorAll('.weather-opt').forEach(b=>b.classList.remove('selected'));btn.classList.add('selected');selectedWeather=btn.dataset.weather}
+
+function startRecording(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showToast('Voice not supported. Type instead.','error');return}
+  recognition=new SR();recognition.continuous=false;recognition.interimResults=false;recognition.lang='en-US';
+  recognition.onresult=(e)=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)finalTranscript+=e.results[i][0].transcript+' ';}document.getElementById('transcriptText').value=finalTranscript.trim()};
+  recognition.onerror=(e)=>{if(e.error==='no-speech'){if(isRecording)restartRecognition()}else if(e.error!=='aborted'){showToast('Mic error: '+e.error,'error');stopRecording()}};
+  recognition.onend=()=>{if(isRecording)restartRecognition()};
+  try{recognition.start();isRecording=true;document.getElementById('recordBtn').classList.add('recording');document.getElementById('recordBtn').textContent='⏹️';document.getElementById('recordStatus').textContent='Recording... speak now';document.getElementById('recordStatus').classList.add('active')}
+  catch(e){showToast('Could not start recording','error')}
+}
+function restartRecognition(){
+  if(!isRecording)return;
+  try{
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    recognition=new SR();recognition.continuous=false;recognition.interimResults=false;recognition.lang='en-US';
+    recognition.onresult=(e)=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)finalTranscript+=e.results[i][0].transcript+' ';}document.getElementById('transcriptText').value=finalTranscript.trim()};
+    recognition.onerror=(e)=>{if(e.error!=='aborted'&&e.error!=='no-speech')stopRecording()};
+    recognition.onend=()=>{if(isRecording)restartRecognition()};
+    recognition.start();
+  }catch(e){}
+}
+function toggleRecording(){isRecording?stopRecording():startRecording()}
+function stopRecording(){
+  isRecording=false;
+  if(recognition){try{recognition.stop()}catch(e){}recognition=null}
+  document.getElementById('recordBtn').classList.remove('recording');
+  document.getElementById('recordBtn').textContent='🎙️';
+  document.getElementById('recordStatus').textContent='Tap to record';
+  document.getElementById('recordStatus').classList.remove('active');
+}
+
+function handlePhotoSelect(e){
+  Array.from(e.target.files).forEach(file=>{
+    const r=new FileReader();
+    r.onload=(ev)=>{selectedPhotos.push({file,preview:ev.target.result});renderPhotosGrid()};
+    r.readAsDataURL(file);
+  });e.target.value='';
+}
+function renderPhotosGrid(){
+  const g=document.getElementById('photosGrid');g.innerHTML='';
+  selectedPhotos.forEach((p,i)=>{
+    const d=document.createElement('div');d.className='photo-polaroid';
+    d.innerHTML=`<img src="${p.preview}" alt=""><button class="remove-photo" onclick="removePhoto(${i})">✕</button>`;
+    g.appendChild(d);
+  });
+  const a=document.createElement('div');a.className='add-photo-btn';
+  a.innerHTML='<span class="plus">+</span><span>Add</span>';
+  a.onclick=()=>document.getElementById('photoInput').click();g.appendChild(a);
+}
+function removePhoto(i){selectedPhotos.splice(i,1);renderPhotosGrid()}
+
+async function saveEntry(){
+  const transcript=document.getElementById('transcriptText').value.trim();
+  const date=document.getElementById('entryDate').value;
+  const location=document.getElementById('entryLocation').value.trim();
+  if(!transcript&&selectedPhotos.length===0){showToast('Add text or photos first','error');return}
+  if(!date){showToast('Please pick a date','error');return}
+  stopRecording();showLoading('saving your memories...');
+  try{
+    const photoUrls=[];
+    for(const p of selectedPhotos){
+      const ext=p.file.name.split('.').pop();
+      const url=await sb.uploadPhoto(p.file,`${Date.now()}_${Math.random().toString(36).substr(2,8)}.${ext}`);
+      if(url)photoUrls.push(url);
+    }
+    const result=await sb.insert('journal_entries',{transcript,entry_date:date,location_tag:location||null,photo_urls:photoUrls.length?JSON.stringify(photoUrls):null,mood:selectedMood||null,weather:selectedWeather||null,created_at:new Date().toISOString()});
+    if(result&&!result.error&&result.length>0){hideLoading();showToast('Entry saved ✦','success');setTimeout(()=>showFeed(),1200)}
+    else throw new Error(result?.error?.message||'Save failed');
+  }catch(err){hideLoading();console.error(err);showToast('Could not save — run the ALTER TABLE commands','error')}
+}
+
+async function loadEntries(){
+  const list=document.getElementById('entriesList');
+  list.innerHTML='<div class="empty-state"><div class="loading-spinner" style="margin:0 auto 10px"></div></div>';
+  try{
+    const entries=await sb.query('journal_entries',{select:'*',order:'entry_date.desc,created_at.desc'});
+    if(!entries||entries.length===0){list.innerHTML='<div class="empty-state"><div class="empty-icon">📖</div><div class="empty-title">Your journal awaits</div><div class="empty-text">Tap "+ New Entry" to begin<br>recording your travels</div></div>';return}
+    list.innerHTML='<div style="height:8px"></div>'+entries.map((e,idx)=>{
+      const photos=e.photo_urls?JSON.parse(e.photo_urls):[];
+      const preview=e.transcript?e.transcript.substring(0,100)+(e.transcript.length>100?'…':''):'';
+      const pols=photos.slice(0,4).map(url=>`<div class="polaroid-mini"><img src="${url}" alt="" loading="lazy"></div>`).join('');
+      return`<div class="entry-card" onclick="showDetail('${e.id}')">
+        <div class="stamp-border"></div>
+        <div class="card-tape ${idx%2===0?'':'alt'}"></div>
+        <div class="card-inner">
+          ${photos.length?`<div class="card-polaroids">${pols}</div>`:''}
+          <div class="card-body">
+            <div class="card-top-row">
+              <div class="card-date-block">
+                <div class="card-date">${formatDate(e.entry_date)}</div>
+                ${e.location_tag?`<div class="card-location">📍 ${e.location_tag}</div>`:''}
+              </div>
+              <div class="card-badges">
+                ${e.mood?`<span class="mood-badge">${e.mood}</span>`:''}
+                ${e.weather?`<span class="weather-badge">${e.weather}</span>`:''}
+              </div>
+            </div>
+            ${preview?`<div class="card-text">${preview}</div>`:''}
+          </div>
+          <div class="card-footer">
+            ${photos.length?`<span class="card-stat">📸 ${photos.length}</span>`:''}
+            ${e.transcript?`<span class="card-stat">✍ ${e.transcript.split(' ').length} words</span>`:''}
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(err){list.innerHTML='<div class="empty-state"><div class="empty-icon">⚠️</div><div class="empty-title">Error loading</div></div>';console.error(err)}
+}
+
+async function showDetail(id){
+  showLoading('opening entry...');
+  try{
+    const entries=await sb.query('journal_entries',{select:'*',eq:{id}});
+    hideLoading();if(!entries||entries.length===0)return;
+    const e=entries[0];currentEntry=e;
+    document.getElementById('detailDate').textContent=formatDate(e.entry_date);
+    document.getElementById('detailLoc').textContent=e.location_tag?'📍 '+e.location_tag:'';
+    document.getElementById('detailMood').textContent=e.mood||'';
+    document.getElementById('detailWeather').textContent=e.weather||'';
+    document.getElementById('detailText').textContent=e.transcript||'(no entry)';
+    const photos=e.photo_urls?JSON.parse(e.photo_urls):[];
+    document.getElementById('detailPolaroids').innerHTML=photos.map(url=>`<div class="polaroid-lg"><img src="${url}" alt="" loading="lazy"><div class="polaroid-caption">✦</div></div>`).join('');
+    showView('detailView');
+  }catch(err){hideLoading();showToast('Could not load entry','error')}
+}
+async function deleteEntry(){
+  if(!currentEntry)return;if(!confirm('Delete this entry?'))return;
+  showLoading('deleting...');await sb.delete('journal_entries',currentEntry.id);
+  hideLoading();showToast('Deleted','success');setTimeout(()=>showFeed(),1000);
+}
+function formatDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-MY',{weekday:'short',day:'numeric',month:'long',year:'numeric'})}
+function showLoading(msg='loading...'){document.getElementById('loadingText').textContent=msg;document.getElementById('loadingOverlay').classList.add('show')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+let _tt;
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+type;clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3000)}
+loadEntries();
+</script>
+</body>
+</html>
