@@ -1,0 +1,1181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#f5ede0">
+<title>My Travel Journal</title>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@400;500;600;700&family=Lora:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --paper: #fdf6ec;
+    --paper-dark: #f5ede0;
+    --ink: #2c1a0e;
+    --ink-light: #6b4c35;
+    --accent: #c4704a;
+    --accent-light: #e8a882;
+    --accent-pale: #f7e4d8;
+    --sage: #7a9e7e;
+    --sage-light: #d4e8d5;
+    --stamp-red: #c0392b;
+    --gold: #c9a84c;
+    --shadow: rgba(44,26,14,0.12);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'Lora', serif;
+    background: var(--paper-dark);
+    color: var(--ink);
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* Paper texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: 
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 1000;
+    opacity: 0.6;
+  }
+
+  /* ===== VIEWS ===== */
+  .view { display: none; min-height: 100dvh; }
+  .view.active { display: block; }
+
+  /* ===== HEADER ===== */
+  .app-header {
+    background: var(--paper);
+    border-bottom: 2px solid var(--accent-light);
+    padding: 16px 20px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 12px var(--shadow);
+  }
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .app-title {
+    font-family: 'Caveat', cursive;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--accent);
+    letter-spacing: -0.5px;
+    line-height: 1;
+  }
+
+  .app-subtitle {
+    font-family: 'Lora', serif;
+    font-size: 11px;
+    color: var(--ink-light);
+    font-style: italic;
+    margin-top: 2px;
+    letter-spacing: 0.5px;
+  }
+
+  .new-entry-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 50px;
+    padding: 10px 18px;
+    font-family: 'Caveat', cursive;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    box-shadow: 0 3px 10px rgba(196,112,74,0.35);
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+  .new-entry-btn:active { transform: scale(0.96); }
+
+  /* ===== JOURNAL FEED ===== */
+  #feedView {
+    padding: 20px 16px 100px;
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 30px;
+  }
+  .empty-icon { font-size: 56px; margin-bottom: 16px; }
+  .empty-title {
+    font-family: 'Caveat', cursive;
+    font-size: 26px;
+    color: var(--accent);
+    margin-bottom: 8px;
+  }
+  .empty-text {
+    font-size: 14px;
+    color: var(--ink-light);
+    font-style: italic;
+    line-height: 1.6;
+  }
+
+  /* Entry Card */
+  .entry-card {
+    background: var(--paper);
+    border-radius: 4px;
+    margin-bottom: 20px;
+    box-shadow: 3px 4px 16px var(--shadow), 0 1px 3px var(--shadow);
+    overflow: hidden;
+    position: relative;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border-top: 3px solid var(--accent-light);
+  }
+  .entry-card:active { transform: scale(0.98); }
+
+  /* Tape decoration */
+  .entry-card::before {
+    content: '';
+    position: absolute;
+    top: -6px;
+    left: 50%;
+    transform: translateX(-50%) rotate(-1deg);
+    width: 60px;
+    height: 18px;
+    background: rgba(196,112,74,0.25);
+    border-radius: 2px;
+    z-index: 2;
+  }
+
+  .card-photos {
+    width: 100%;
+    height: 160px;
+    overflow: hidden;
+    display: flex;
+    gap: 2px;
+  }
+  .card-photos img {
+    flex: 1;
+    object-fit: cover;
+    height: 100%;
+  }
+  .card-photos.no-photos { display: none; }
+
+  .card-body { padding: 16px 18px 14px; }
+
+  .card-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+
+  .card-date {
+    font-family: 'Caveat', cursive;
+    font-size: 15px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .card-location {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 12px;
+    color: var(--ink-light);
+    font-style: italic;
+    background: var(--accent-pale);
+    padding: 3px 10px;
+    border-radius: 20px;
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .card-text {
+    font-size: 14px;
+    line-height: 1.65;
+    color: var(--ink);
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .card-footer {
+    padding: 10px 18px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-top: 1px dashed var(--accent-light);
+  }
+
+  .card-stat {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    color: var(--ink-light);
+  }
+
+  /* ===== ENTRY FORM ===== */
+  #entryView {
+    padding-bottom: 40px;
+  }
+
+  .entry-header {
+    background: var(--paper);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 2px solid var(--accent-light);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px var(--shadow);
+  }
+
+  .back-btn {
+    background: none;
+    border: none;
+    font-size: 22px;
+    cursor: pointer;
+    color: var(--accent);
+    padding: 4px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+  }
+
+  .entry-header-title {
+    font-family: 'Caveat', cursive;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--ink);
+    flex: 1;
+  }
+
+  .save-btn {
+    background: var(--accent);
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 9px 20px;
+    font-family: 'Caveat', cursive;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(196,112,74,0.35);
+    transition: all 0.2s;
+  }
+  .save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+  .save-btn:not(:disabled):active { transform: scale(0.96); }
+
+  .entry-form { padding: 20px 16px; }
+
+  /* Meta row */
+  .meta-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .meta-field {
+    flex: 1;
+    background: var(--paper);
+    border: 1.5px solid var(--accent-light);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .meta-field input {
+    border: none;
+    background: none;
+    font-family: 'Lora', serif;
+    font-size: 13px;
+    color: var(--ink);
+    width: 100%;
+    outline: none;
+  }
+  .meta-field input::placeholder { color: var(--ink-light); font-style: italic; }
+  .meta-field .meta-icon { font-size: 16px; flex-shrink: 0; }
+
+  /* Voice section */
+  .section-label {
+    font-family: 'Caveat', cursive;
+    font-size: 18px;
+    color: var(--ink-light);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--accent-light);
+    opacity: 0.6;
+  }
+
+  .voice-area {
+    background: var(--paper);
+    border: 2px dashed var(--accent-light);
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 16px;
+  }
+
+  .record-btn {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent);
+    color: white;
+    font-size: 28px;
+    cursor: pointer;
+    margin: 0 auto 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 16px rgba(196,112,74,0.4);
+    transition: all 0.2s;
+    position: relative;
+  }
+
+  .record-btn.recording {
+    background: var(--stamp-red);
+    box-shadow: 0 4px 20px rgba(192,57,43,0.5);
+    animation: pulse 1.2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); box-shadow: 0 4px 20px rgba(192,57,43,0.5); }
+    50% { transform: scale(1.08); box-shadow: 0 6px 28px rgba(192,57,43,0.7); }
+  }
+
+  .record-status {
+    font-family: 'Caveat', cursive;
+    font-size: 17px;
+    color: var(--ink-light);
+    margin-bottom: 4px;
+  }
+  .record-status.active { color: var(--stamp-red); font-weight: 600; }
+
+  .record-hint {
+    font-size: 11px;
+    color: var(--ink-light);
+    font-style: italic;
+    opacity: 0.7;
+  }
+
+  /* Transcript */
+  .transcript-box {
+    background: var(--paper);
+    border: 1.5px solid var(--accent-light);
+    border-radius: 12px;
+    padding: 14px 16px;
+    margin-bottom: 16px;
+    position: relative;
+  }
+
+  .transcript-box::before {
+    content: attr(data-label);
+    position: absolute;
+    top: -10px;
+    left: 14px;
+    background: var(--paper-dark);
+    padding: 0 8px;
+    font-family: 'Caveat', cursive;
+    font-size: 13px;
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  #transcriptText {
+    width: 100%;
+    min-height: 130px;
+    border: none;
+    background: none;
+    font-family: 'Caveat', cursive;
+    font-size: 18px;
+    color: var(--ink);
+    line-height: 1.7;
+    resize: none;
+    outline: none;
+  }
+  #transcriptText::placeholder { color: var(--ink-light); opacity: 0.6; }
+
+  /* Lined paper effect */
+  .lined-paper {
+    background-image: repeating-linear-gradient(
+      transparent,
+      transparent 33px,
+      rgba(196,112,74,0.15) 33px,
+      rgba(196,112,74,0.15) 34px
+    );
+    background-position: 0 6px;
+    padding-top: 6px;
+  }
+
+  /* Photos section */
+  .photos-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+
+  .photo-thumb {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 2px 2px 8px var(--shadow);
+    border: 2px solid white;
+  }
+
+  .photo-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .photo-thumb .remove-photo {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    background: rgba(192,57,43,0.85);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .add-photo-btn {
+    aspect-ratio: 1;
+    border-radius: 8px;
+    border: 2px dashed var(--accent-light);
+    background: var(--paper);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    cursor: pointer;
+    color: var(--accent-light);
+    font-family: 'Caveat', cursive;
+    font-size: 13px;
+    transition: all 0.2s;
+  }
+  .add-photo-btn:active { background: var(--accent-pale); }
+  .add-photo-btn .plus { font-size: 22px; line-height: 1; }
+
+  #photoInput { display: none; }
+
+  /* ===== DETAIL VIEW ===== */
+  #detailView { background: var(--paper-dark); }
+
+  .detail-header {
+    background: var(--paper);
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 2px solid var(--accent-light);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 10px var(--shadow);
+  }
+
+  .detail-header-info { flex: 1; }
+  .detail-date {
+    font-family: 'Caveat', cursive;
+    font-size: 20px;
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .detail-location {
+    font-size: 12px;
+    color: var(--ink-light);
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    margin-top: 2px;
+  }
+
+  .delete-btn {
+    background: none;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    color: var(--stamp-red);
+    padding: 6px;
+    border-radius: 8px;
+  }
+
+  .detail-photos {
+    width: 100%;
+    overflow-x: auto;
+    display: flex;
+    gap: 8px;
+    padding: 16px;
+    scroll-snap-type: x mandatory;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .detail-photos img {
+    height: 220px;
+    width: auto;
+    max-width: 85vw;
+    border-radius: 8px;
+    object-fit: cover;
+    scroll-snap-align: start;
+    box-shadow: 3px 3px 12px var(--shadow);
+    border: 3px solid white;
+    flex-shrink: 0;
+  }
+
+  .detail-body {
+    padding: 20px 20px 60px;
+    background: var(--paper);
+    margin: 0 16px 20px;
+    border-radius: 8px;
+    box-shadow: 3px 4px 16px var(--shadow);
+    position: relative;
+  }
+
+  /* Corner tape decorations */
+  .detail-body::before, .detail-body::after {
+    content: '';
+    position: absolute;
+    width: 40px;
+    height: 14px;
+    background: rgba(196,112,74,0.3);
+    border-radius: 2px;
+  }
+  .detail-body::before { top: -6px; left: 16px; transform: rotate(-2deg); }
+  .detail-body::after { top: -6px; right: 16px; transform: rotate(2deg); }
+
+  .detail-text {
+    font-family: 'Caveat', cursive;
+    font-size: 20px;
+    line-height: 1.75;
+    color: var(--ink);
+    white-space: pre-wrap;
+    background-image: repeating-linear-gradient(
+      transparent, transparent 34px,
+      rgba(196,112,74,0.12) 34px, rgba(196,112,74,0.12) 35px
+    );
+    background-position: 0 8px;
+    padding-top: 8px;
+    min-height: 120px;
+  }
+
+  /* ===== TOAST ===== */
+  .toast {
+    position: fixed;
+    bottom: 30px;
+    left: 50%;
+    transform: translateX(-50%) translateY(80px);
+    background: var(--ink);
+    color: var(--paper);
+    padding: 12px 24px;
+    border-radius: 50px;
+    font-family: 'Caveat', cursive;
+    font-size: 17px;
+    z-index: 9999;
+    transition: transform 0.3s cubic-bezier(0.34,1.56,0.64,1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.25);
+    white-space: nowrap;
+  }
+  .toast.show { transform: translateX(-50%) translateY(0); }
+  .toast.success { background: var(--sage); }
+  .toast.error { background: var(--stamp-red); }
+
+  /* ===== LOADING ===== */
+  .loading-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(245,237,224,0.85);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 9000;
+    flex-direction: column;
+    gap: 16px;
+  }
+  .loading-overlay.show { display: flex; }
+  .loading-spinner {
+    width: 44px;
+    height: 44px;
+    border: 3px solid var(--accent-light);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text {
+    font-family: 'Caveat', cursive;
+    font-size: 20px;
+    color: var(--ink-light);
+    font-style: italic;
+  }
+
+  /* ===== STAMP decoration ===== */
+  .stamp {
+    display: inline-block;
+    border: 2px solid var(--accent);
+    border-radius: 4px;
+    padding: 3px 10px;
+    font-family: 'Caveat', cursive;
+    font-size: 12px;
+    color: var(--accent);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    opacity: 0.7;
+    transform: rotate(-3deg);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--accent-light); border-radius: 4px; }
+</style>
+</head>
+<body>
+
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text">saving your memories...</div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- ===== FEED VIEW ===== -->
+<div class="view active" id="feedView">
+  <div class="app-header">
+    <div class="header-inner">
+      <div>
+        <div class="app-title">✈️ My Travel Journal</div>
+        <div class="app-subtitle">every journey, remembered</div>
+      </div>
+      <button class="new-entry-btn" onclick="showNewEntry()">
+        ✏️ New Entry
+      </button>
+    </div>
+  </div>
+  <div id="entriesList">
+    <div class="empty-state">
+      <div class="empty-icon">📖</div>
+      <div class="empty-title">Your journal awaits</div>
+      <div class="empty-text">Tap "New Entry" to record<br>your first travel memory</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NEW ENTRY VIEW ===== -->
+<div class="view" id="entryView">
+  <div class="entry-header">
+    <button class="back-btn" onclick="showFeed()">←</button>
+    <div class="entry-header-title">New Entry</div>
+    <button class="save-btn" id="saveBtn" onclick="saveEntry()">Save ✓</button>
+  </div>
+
+  <div class="entry-form">
+    <!-- Date & Location -->
+    <div class="meta-row">
+      <div class="meta-field">
+        <span class="meta-icon">📅</span>
+        <input type="date" id="entryDate">
+      </div>
+      <div class="meta-field">
+        <span class="meta-icon">📍</span>
+        <input type="text" id="entryLocation" placeholder="Where are you?">
+      </div>
+    </div>
+
+    <!-- Voice Recording -->
+    <div class="section-label">🎤 Voice</div>
+    <div class="voice-area">
+      <button class="record-btn" id="recordBtn" onclick="toggleRecording()">
+        🎙️
+      </button>
+      <div class="record-status" id="recordStatus">Tap to record</div>
+      <div class="record-hint">Tap once to start, tap again to stop</div>
+    </div>
+
+    <!-- Transcript -->
+    <div class="section-label">✍️ Journal Entry</div>
+    <div class="transcript-box lined-paper" data-label="your words">
+      <textarea 
+        id="transcriptText" 
+        placeholder="Your voice transcript will appear here... or write directly ✨"
+      ></textarea>
+    </div>
+
+    <!-- Photos -->
+    <div class="section-label">📸 Photos</div>
+    <div class="photos-grid" id="photosGrid">
+      <div class="add-photo-btn" onclick="document.getElementById('photoInput').click()">
+        <span class="plus">+</span>
+        <span>Add Photo</span>
+      </div>
+    </div>
+    <input type="file" id="photoInput" accept="image/*" multiple onchange="handlePhotoSelect(event)">
+  </div>
+</div>
+
+<!-- ===== DETAIL VIEW ===== -->
+<div class="view" id="detailView">
+  <div class="detail-header">
+    <button class="back-btn" onclick="showFeed()">←</button>
+    <div class="detail-header-info">
+      <div class="detail-date" id="detailDate"></div>
+      <div class="detail-location" id="detailLocation"></div>
+    </div>
+    <button class="delete-btn" onclick="deleteEntry()" title="Delete">🗑️</button>
+  </div>
+
+  <div id="detailPhotosWrap"></div>
+
+  <div style="padding: 0 16px;">
+    <div class="detail-body">
+      <div class="detail-text" id="detailText"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ===== SUPABASE CONFIG =====
+const SUPABASE_URL = 'https://uwgotfnwnbgqnwvumvxn.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3Z290Zm53bmJncW53dnVtdnhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5OTQwMzEsImV4cCI6MjA5MjU3MDAzMX0.SL6B4EN8Q32MXmdVySDGlPq7B-zFWPeGyWY15I73VNU';
+
+const sb = {
+  async query(table, options = {}) {
+    let url = `${SUPABASE_URL}/rest/v1/${table}`;
+    const params = [];
+    if (options.select) params.push(`select=${options.select}`);
+    if (options.order) params.push(`order=${options.order}`);
+    if (options.eq) Object.entries(options.eq).forEach(([k,v]) => params.push(`${k}=eq.${v}`));
+    if (params.length) url += '?' + params.join('&');
+    const res = await fetch(url, {
+      headers: { 
+        'apikey': SUPABASE_KEY, 
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json'
+      }
+    });
+    return res.json();
+  },
+  async insert(table, data) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}`, {
+      method: 'POST',
+      headers: { 
+        'apikey': SUPABASE_KEY, 
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': 'application/json',
+        'Prefer': 'return=representation'
+      },
+      body: JSON.stringify(data)
+    });
+    return res.json();
+  },
+  async delete(table, id) {
+    const res = await fetch(`${SUPABASE_URL}/rest/v1/${table}?id=eq.${id}`, {
+      method: 'DELETE',
+      headers: { 
+        'apikey': SUPABASE_KEY, 
+        'Authorization': `Bearer ${SUPABASE_KEY}`
+      }
+    });
+    return res.ok;
+  },
+  async uploadPhoto(file, path) {
+    const res = await fetch(`${SUPABASE_URL}/storage/v1/object/journal-photos/${path}`, {
+      method: 'POST',
+      headers: { 
+        'apikey': SUPABASE_KEY, 
+        'Authorization': `Bearer ${SUPABASE_KEY}`,
+        'Content-Type': file.type
+      },
+      body: file
+    });
+    if (res.ok) {
+      return `${SUPABASE_URL}/storage/v1/object/public/journal-photos/${path}`;
+    }
+    return null;
+  }
+};
+
+// ===== STATE =====
+let currentEntry = null;
+let selectedPhotos = [];
+let recognition = null;
+let isRecording = false;
+let finalTranscript = '';
+
+// ===== VIEWS =====
+function showView(id) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function showFeed() {
+  showView('feedView');
+  loadEntries();
+}
+
+function showNewEntry() {
+  // Reset form completely
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('entryDate').value = today;
+  document.getElementById('entryLocation').value = '';
+  const ta = document.getElementById('transcriptText');
+  ta.value = '';
+  selectedPhotos = [];
+  finalTranscript = '';
+  renderPhotosGrid();
+  stopRecording();
+  showView('entryView');
+}
+
+// ===== VOICE RECORDING =====
+// Android Chrome fix: use non-continuous mode, restart manually after each result
+function startRecording() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    showToast('Voice not supported. Please type instead.', 'error');
+    return;
+  }
+
+  recognition = new SpeechRecognition();
+  recognition.continuous = false;      // false = Android Chrome works correctly
+  recognition.interimResults = false;  // false = only get clean final results
+  recognition.lang = 'en-US';
+
+  recognition.onresult = (e) => {
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) {
+        const t = e.results[i][0].transcript;
+        finalTranscript += t + ' ';
+      }
+    }
+    document.getElementById('transcriptText').value = finalTranscript.trim();
+  };
+
+  recognition.onerror = (e) => {
+    if (e.error === 'no-speech') {
+      // restart silently if no speech detected
+      if (isRecording) restartRecognition();
+    } else if (e.error !== 'aborted') {
+      showToast('Mic error: ' + e.error, 'error');
+      stopRecording();
+    }
+  };
+
+  recognition.onend = () => {
+    if (isRecording) restartRecognition(); // keep listening
+  };
+
+  try {
+    recognition.start();
+    isRecording = true;
+    document.getElementById('recordBtn').classList.add('recording');
+    document.getElementById('recordBtn').textContent = '⏹️';
+    document.getElementById('recordStatus').textContent = 'Recording... speak now';
+    document.getElementById('recordStatus').classList.add('active');
+  } catch(e) {
+    showToast('Could not start recording', 'error');
+  }
+}
+
+function restartRecognition() {
+  if (!recognition || !isRecording) return;
+  try {
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    recognition = new SpeechRecognition();
+    recognition.continuous = false;
+    recognition.interimResults = false;
+    recognition.lang = 'en-US';
+    recognition.onresult = (e) => {
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        if (e.results[i].isFinal) {
+          finalTranscript += e.results[i][0].transcript + ' ';
+        }
+      }
+      document.getElementById('transcriptText').value = finalTranscript.trim();
+    };
+    recognition.onerror = (e) => {
+      if (e.error !== 'aborted' && e.error !== 'no-speech') stopRecording();
+    };
+    recognition.onend = () => { if (isRecording) restartRecognition(); };
+    recognition.start();
+  } catch(e) { /* ignore restart errors */ }
+}
+
+function toggleRecording() {
+  if (isRecording) stopRecording();
+  else startRecording();
+}
+
+function stopRecording() {
+  isRecording = false;
+  if (recognition) {
+    try { recognition.stop(); } catch(e) {}
+    recognition = null;
+  }
+  document.getElementById('recordBtn').classList.remove('recording');
+  document.getElementById('recordBtn').textContent = '🎙️';
+  document.getElementById('recordStatus').textContent = 'Tap to record';
+  document.getElementById('recordStatus').classList.remove('active');
+}
+
+// ===== PHOTOS =====
+function handlePhotoSelect(e) {
+  const files = Array.from(e.target.files);
+  files.forEach(file => {
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      selectedPhotos.push({ file, preview: ev.target.result });
+      renderPhotosGrid();
+    };
+    reader.readAsDataURL(file);
+  });
+  e.target.value = '';
+}
+
+function renderPhotosGrid() {
+  const grid = document.getElementById('photosGrid');
+  grid.innerHTML = '';
+  selectedPhotos.forEach((p, i) => {
+    const thumb = document.createElement('div');
+    thumb.className = 'photo-thumb';
+    thumb.innerHTML = `
+      <img src="${p.preview}" alt="photo">
+      <button class="remove-photo" onclick="removePhoto(${i})">✕</button>
+    `;
+    grid.appendChild(thumb);
+  });
+  const addBtn = document.createElement('div');
+  addBtn.className = 'add-photo-btn';
+  addBtn.innerHTML = '<span class="plus">+</span><span>Add Photo</span>';
+  addBtn.onclick = () => document.getElementById('photoInput').click();
+  grid.appendChild(addBtn);
+}
+
+function removePhoto(i) {
+  selectedPhotos.splice(i, 1);
+  renderPhotosGrid();
+}
+
+// ===== SAVE ENTRY =====
+async function saveEntry() {
+  const transcript = document.getElementById('transcriptText').value.trim();
+  const date = document.getElementById('entryDate').value;
+  const location = document.getElementById('entryLocation').value.trim();
+
+  if (!transcript && selectedPhotos.length === 0) {
+    showToast('Please add some text or photos first', 'error');
+    return;
+  }
+  if (!date) {
+    showToast('Please select a date', 'error');
+    return;
+  }
+
+  stopRecording();
+  showLoading('saving your memories...');
+
+  try {
+    // Upload photos
+    const photoUrls = [];
+    for (const p of selectedPhotos) {
+      const ext = p.file.name.split('.').pop();
+      const path = `${Date.now()}_${Math.random().toString(36).substr(2,8)}.${ext}`;
+      const url = await sb.uploadPhoto(p.file, path);
+      if (url) photoUrls.push(url);
+    }
+
+    // Save entry
+    const entry = {
+      transcript,
+      entry_date: date,
+      location_tag: location || null,
+      photo_urls: photoUrls.length ? JSON.stringify(photoUrls) : null,
+      created_at: new Date().toISOString()
+    };
+
+    const result = await sb.insert('journal_entries', entry);
+
+    if (result && !result.error && result.length > 0) {
+      hideLoading();
+      showToast('Entry saved! ✨', 'success');
+      setTimeout(() => showFeed(), 1200);
+    } else {
+      throw new Error(result?.error?.message || 'Save failed');
+    }
+  } catch (err) {
+    hideLoading();
+    console.error(err);
+    showToast('Could not save. Check your database setup.', 'error');
+  }
+}
+
+// ===== LOAD ENTRIES =====
+async function loadEntries() {
+  const list = document.getElementById('entriesList');
+  list.innerHTML = '<div class="empty-state"><div class="loading-spinner" style="margin:0 auto"></div></div>';
+
+  try {
+    const entries = await sb.query('journal_entries', {
+      select: '*',
+      order: 'entry_date.desc,created_at.desc'
+    });
+
+    if (!entries || entries.length === 0) {
+      list.innerHTML = `
+        <div class="empty-state">
+          <div class="empty-icon">📖</div>
+          <div class="empty-title">Your journal awaits</div>
+          <div class="empty-text">Tap "New Entry" to record<br>your first travel memory</div>
+        </div>`;
+      return;
+    }
+
+    list.innerHTML = entries.map(e => {
+      const photos = e.photo_urls ? JSON.parse(e.photo_urls) : [];
+      const dateStr = formatDate(e.entry_date);
+      const preview = e.transcript ? e.transcript.substring(0, 120) + (e.transcript.length > 120 ? '...' : '') : '';
+      const photoHtml = photos.slice(0,3).map(url => `<img src="${url}" alt="" loading="lazy">`).join('');
+
+      return `
+        <div class="entry-card" onclick="showDetail('${e.id}')">
+          ${photos.length ? `<div class="card-photos">${photoHtml}</div>` : ''}
+          <div class="card-body">
+            <div class="card-meta">
+              <div class="card-date">📅 ${dateStr}</div>
+              ${e.location_tag ? `<div class="card-location">📍 ${e.location_tag}</div>` : ''}
+            </div>
+            ${preview ? `<div class="card-text">${preview}</div>` : ''}
+          </div>
+          <div class="card-footer">
+            ${photos.length ? `<span class="card-stat">📸 ${photos.length} photo${photos.length>1?'s':''}</span>` : ''}
+            ${e.transcript ? `<span class="card-stat">✍️ ${e.transcript.split(' ').length} words</span>` : ''}
+          </div>
+        </div>`;
+    }).join('');
+  } catch (err) {
+    list.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <div class="empty-title">Setup needed</div>
+        <div class="empty-text">Please set up your database.<br>Check the setup instructions.</div>
+      </div>`;
+    console.error(err);
+  }
+}
+
+// ===== SHOW DETAIL =====
+async function showDetail(id) {
+  showLoading('loading entry...');
+  try {
+    const entries = await sb.query('journal_entries', {
+      select: '*',
+      eq: { id }
+    });
+    hideLoading();
+    if (!entries || entries.length === 0) return;
+    const e = entries[0];
+    currentEntry = e;
+
+    document.getElementById('detailDate').textContent = '📅 ' + formatDate(e.entry_date);
+    document.getElementById('detailLocation').innerHTML = e.location_tag 
+      ? `📍 ${e.location_tag}` : '';
+    document.getElementById('detailText').textContent = e.transcript || '(no text)';
+
+    const photos = e.photo_urls ? JSON.parse(e.photo_urls) : [];
+    const wrap = document.getElementById('detailPhotosWrap');
+    if (photos.length) {
+      wrap.innerHTML = `<div class="detail-photos">${photos.map(url => `<img src="${url}" alt="" loading="lazy">`).join('')}</div>`;
+    } else {
+      wrap.innerHTML = '';
+    }
+
+    showView('detailView');
+  } catch(err) {
+    hideLoading();
+    showToast('Could not load entry', 'error');
+  }
+}
+
+// ===== DELETE =====
+async function deleteEntry() {
+  if (!currentEntry) return;
+  if (!confirm('Delete this entry? This cannot be undone.')) return;
+  showLoading('deleting...');
+  await sb.delete('journal_entries', currentEntry.id);
+  hideLoading();
+  showToast('Entry deleted', 'success');
+  setTimeout(() => showFeed(), 1000);
+}
+
+// ===== HELPERS =====
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-MY', { 
+    weekday: 'short', day: 'numeric', 
+    month: 'long', year: 'numeric' 
+  });
+}
+
+function showLoading(msg = 'loading...') {
+  document.querySelector('.loading-text').textContent = msg;
+  document.getElementById('loadingOverlay').classList.add('show');
+}
+
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('show');
+}
+
+let toastTimer;
+function showToast(msg, type = '') {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast show ' + type;
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ===== INIT =====
+loadEntries();
+</script>
+</body>
+</html>
