@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#fdf0f5">
+<title>Nadine's Journal 🌙</title>
+<link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&family=Quicksand:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --lavender:#e8e0f5;--lavender2:#d4c8ed;--lavender3:#b8a8e0;
+  --pink:#fde8f0;--pink2:#f8c8dc;--pink3:#e89ab8;
+  --mint:#e0f5ee;--mint2:#b8e8d8;--mint3:#7dcbb0;
+  --yellow:#fef6e0;--yellow2:#fde8a8;--yellow3:#f0c840;
+  --cream:#fdf8f5;--white:#ffffff;
+  --ink:#3a2840;--ink2:#6b4f6e;--ink3:#a888aa;
+  --shadow:rgba(58,40,64,0.10);--shadow2:rgba(58,40,64,0.18);
+  --tab-h:68px;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:'Nunito',sans-serif;background:var(--cream);color:var(--ink);min-height:100dvh;overflow-x:hidden;padding-bottom:var(--tab-h)}
+
+/* VIEWS */
+.view{display:none;min-height:calc(100dvh - var(--tab-h))}
+.view.active{display:block}
+
+/* DECORATIVE CLOUDS (CSS only) */
+.cloud-bar{
+  width:100%;height:48px;position:relative;overflow:hidden;
+  background:linear-gradient(180deg,var(--lavender) 0%,transparent 100%);
+  flex-shrink:0;
+}
+.cloud-bar::before,.cloud-bar::after{
+  content:'☁️ ☁️ ☁️ ☁️ ☁️ ☁️ ☁️ ☁️';
+  position:absolute;top:6px;font-size:18px;letter-spacing:8px;opacity:0.35;
+  white-space:nowrap;
+}
+.cloud-bar::before{left:0}
+.cloud-bar::after{right:0;top:18px;font-size:14px;letter-spacing:12px;opacity:0.2}
+
+/* HEADER */
+.page-header{
+  background:linear-gradient(135deg,var(--lavender) 0%,var(--pink) 100%);
+  padding:16px 18px 12px;
+  position:sticky;top:0;z-index:100;
+  box-shadow:0 2px 12px var(--shadow);
+}
+.page-header-inner{display:flex;align-items:center;justify-content:space-between}
+.page-title{font-family:'Quicksand',sans-serif;font-size:22px;font-weight:700;color:var(--ink);letter-spacing:0.3px}
+.page-title span{font-size:13px;font-weight:500;color:var(--ink2);display:block;margin-top:1px}
+.header-action-btn{
+  background:white;color:var(--ink);border:none;
+  border-radius:50px;padding:9px 16px;
+  font-family:'Nunito',sans-serif;font-size:14px;font-weight:700;
+  cursor:pointer;box-shadow:0 2px 8px var(--shadow2);
+  transition:all 0.15s;white-space:nowrap;
+}
+.header-action-btn:active{transform:scale(0.96)}
+
+/* BOTTOM TAB BAR */
+.tab-bar{
+  position:fixed;bottom:0;left:0;right:0;
+  height:var(--tab-h);
+  background:white;
+  border-top:1px solid rgba(58,40,64,0.08);
+  display:flex;align-items:stretch;
+  box-shadow:0 -4px 20px var(--shadow);
+  z-index:200;
+}
+.tab-item{
+  flex:1;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:3px;border:none;background:none;cursor:pointer;
+  padding:8px 4px;transition:all 0.15s;
+  color:var(--ink3);
+}
+.tab-item.active{color:var(--pink3)}
+.tab-icon{font-size:22px;line-height:1;transition:transform 0.15s}
+.tab-item.active .tab-icon{transform:scale(1.15)}
+.tab-label{font-size:10px;font-weight:700;letter-spacing:0.3px;text-transform:uppercase}
+
+/* CARDS */
+.card{
+  background:white;border-radius:20px;
+  margin-bottom:14px;
+  box-shadow:0 2px 12px var(--shadow);
+  overflow:hidden;position:relative;
+}
+.card-header{
+  padding:14px 16px 10px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-title{font-size:13px;font-weight:800;color:var(--ink2);letter-spacing:0.5px;text-transform:uppercase}
+.card-body{padding:0 16px 16px}
+
+/* SECTION */
+.section-pad{padding:16px 16px 0}
+
+/* MOOD PICKER */
+.mood-row{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 16px}
+.mood-btn{
+  width:46px;height:46px;border-radius:50%;
+  border:2px solid transparent;background:var(--lavender);
+  font-size:22px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all 0.15s;
+}
+.mood-btn.selected{border-color:var(--lavender3);background:var(--lavender2);transform:scale(1.18);box-shadow:0 3px 10px var(--shadow2)}
+
+/* VOICE */
+.voice-area{
+  background:linear-gradient(135deg,var(--mint) 0%,var(--lavender) 100%);
+  border-radius:16px;padding:18px;text-align:center;
+  margin:0 16px 16px;
+}
+.record-btn{
+  width:60px;height:60px;border-radius:50%;border:none;
+  background:white;font-size:24px;cursor:pointer;
+  margin:0 auto 8px;display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 14px var(--shadow2);transition:all 0.15s;
+}
+.record-btn.recording{background:var(--pink3);animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{transform:scale(1);box-shadow:0 4px 14px var(--shadow2)}50%{transform:scale(1.08);box-shadow:0 6px 20px rgba(232,154,184,0.5)}}
+.record-status{font-size:13px;font-weight:600;color:var(--ink2)}
+.record-status.active{color:var(--pink3)}
+.record-hint{font-size:11px;color:var(--ink3);margin-top:3px}
+
+/* TRANSCRIPT */
+.note-area{
+  background:var(--yellow);border-radius:16px;
+  margin:0 16px 16px;padding:14px 16px;
+  position:relative;
+}
+.note-area::before{content:'✏️';position:absolute;top:10px;right:12px;font-size:14px;opacity:0.5}
+#todayNote{
+  width:100%;min-height:90px;border:none;background:none;
+  font-family:'Nunito',sans-serif;font-size:15px;color:var(--ink);
+  line-height:1.7;resize:none;outline:none;
+}
+#todayNote::placeholder{color:var(--ink3);font-style:italic}
+
+/* PHOTOS GRID */
+.photo-grid-wrap{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 16px}
+.photo-bubble{
+  width:80px;height:80px;border-radius:16px;overflow:hidden;
+  position:relative;box-shadow:0 2px 8px var(--shadow2);
+  border:3px solid white;
+}
+.photo-bubble img{width:100%;height:100%;object-fit:cover}
+.photo-bubble .rm{
+  position:absolute;top:3px;right:3px;
+  width:20px;height:20px;border-radius:50%;
+  background:rgba(58,40,64,0.7);color:white;border:none;
+  font-size:10px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+}
+.add-photo-bubble{
+  width:80px;height:80px;border-radius:16px;
+  border:2.5px dashed var(--lavender3);background:var(--lavender);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:2px;cursor:pointer;color:var(--ink3);font-size:11px;font-weight:700;
+  transition:background 0.15s;
+}
+.add-photo-bubble:active{background:var(--lavender2)}
+.add-photo-bubble .plus{font-size:22px;color:var(--lavender3)}
+input[type=file]{display:none}
+
+/* SAVE BTN */
+.save-bar{padding:0 16px 20px}
+.save-bar-btn{
+  width:100%;padding:14px;border:none;border-radius:50px;
+  background:linear-gradient(135deg,var(--pink3),var(--lavender3));
+  color:white;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;
+  cursor:pointer;box-shadow:0 4px 14px rgba(232,154,184,0.45);
+  transition:all 0.15s;letter-spacing:0.3px;
+}
+.save-bar-btn:active{transform:scale(0.98)}
+
+/* MILESTONES */
+.milestone-group-label{
+  font-size:11px;font-weight:800;color:var(--ink3);
+  letter-spacing:1.5px;text-transform:uppercase;
+  padding:12px 16px 6px;
+}
+.milestone-item{
+  background:white;border-radius:16px;margin:0 16px 10px;
+  padding:14px 16px;display:flex;align-items:center;gap:12px;
+  box-shadow:0 2px 8px var(--shadow);cursor:pointer;transition:all 0.15s;
+}
+.milestone-item:active{transform:scale(0.98)}
+.milestone-check{
+  width:32px;height:32px;border-radius:50%;flex-shrink:0;
+  border:2.5px solid var(--lavender2);background:white;
+  display:flex;align-items:center;justify-content:center;
+  font-size:16px;transition:all 0.2s;
+}
+.milestone-item.done .milestone-check{background:var(--mint2);border-color:var(--mint3)}
+.milestone-info{flex:1}
+.milestone-title{font-size:14px;font-weight:700;color:var(--ink)}
+.milestone-item.done .milestone-title{color:var(--ink3);text-decoration:line-through;text-decoration-color:var(--mint3)}
+.milestone-date{font-size:11px;color:var(--mint3);font-weight:600;margin-top:2px}
+.milestone-photo-badge{font-size:16px}
+
+/* ADD MILESTONE */
+.add-milestone-row{
+  margin:4px 16px 16px;display:flex;gap:8px;
+}
+.add-milestone-input{
+  flex:1;background:white;border:1.5px solid var(--lavender2);
+  border-radius:50px;padding:10px 16px;
+  font-family:'Nunito',sans-serif;font-size:14px;color:var(--ink);outline:none;
+}
+.add-milestone-input::placeholder{color:var(--ink3);font-style:italic}
+.add-milestone-btn{
+  background:var(--lavender3);color:white;border:none;
+  border-radius:50px;padding:10px 16px;font-size:14px;font-weight:700;
+  cursor:pointer;white-space:nowrap;
+}
+
+/* GROWTH */
+.growth-form{background:white;border-radius:20px;margin:16px;padding:18px;box-shadow:0 2px 12px var(--shadow)}
+.growth-row{display:flex;gap:10px;margin-bottom:12px}
+.growth-field{flex:1;display:flex;flex-direction:column;gap:5px}
+.growth-label{font-size:11px;font-weight:800;color:var(--ink3);letter-spacing:0.5px;text-transform:uppercase}
+.growth-input{
+  background:var(--lavender);border:none;border-radius:12px;
+  padding:12px 14px;font-family:'Nunito',sans-serif;
+  font-size:15px;color:var(--ink);font-weight:600;outline:none;
+}
+.growth-input::placeholder{color:var(--ink3);font-weight:400}
+
+/* GROWTH LOG */
+.growth-log-item{
+  background:white;border-radius:16px;margin:0 16px 10px;
+  padding:14px 16px;display:flex;align-items:center;
+  box-shadow:0 2px 8px var(--shadow);gap:12px;
+}
+.growth-icon{font-size:28px}
+.growth-info{flex:1}
+.growth-date{font-size:12px;color:var(--ink3);font-weight:600}
+.growth-vals{font-size:15px;font-weight:800;color:var(--ink);margin-top:2px}
+.growth-vals span{color:var(--lavender3)}
+
+/* CHART */
+.chart-wrap{
+  background:white;border-radius:20px;margin:16px;
+  padding:18px;box-shadow:0 2px 12px var(--shadow);
+}
+.chart-title{font-size:13px;font-weight:800;color:var(--ink2);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px}
+.chart-tabs{display:flex;gap:6px;margin-bottom:14px}
+.chart-tab{
+  padding:6px 14px;border-radius:50px;border:none;
+  font-family:'Nunito',sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;background:var(--lavender);color:var(--ink2);transition:all 0.15s;
+}
+.chart-tab.active{background:var(--lavender3);color:white}
+canvas{max-width:100%;border-radius:8px}
+
+/* DAYCARE */
+.daycare-card{
+  background:white;border-radius:20px;margin:0 16px 14px;
+  overflow:hidden;box-shadow:0 2px 12px var(--shadow);
+}
+.daycare-card-header{
+  background:linear-gradient(135deg,var(--mint) 0%,var(--yellow) 100%);
+  padding:12px 16px;display:flex;align-items:center;justify-content:space-between;
+}
+.daycare-date{font-size:13px;font-weight:800;color:var(--ink)}
+.daycare-photos{display:flex;gap:6px;padding:12px 12px 0;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.daycare-photos::-webkit-scrollbar{display:none}
+.daycare-photo{width:100px;height:90px;border-radius:12px;object-fit:cover;flex-shrink:0;border:3px solid white;box-shadow:0 2px 6px var(--shadow)}
+.daycare-note{font-size:14px;color:var(--ink2);padding:10px 16px 14px;line-height:1.6;font-style:italic}
+
+/* MEMORY FEED */
+.memory-item{
+  background:white;border-radius:20px;margin:0 16px 14px;
+  overflow:hidden;box-shadow:0 2px 12px var(--shadow);
+  position:relative;
+}
+.memory-accent{height:6px;width:100%}
+.memory-accent.today{background:linear-gradient(90deg,var(--pink2),var(--lavender2))}
+.memory-accent.milestone{background:linear-gradient(90deg,var(--mint2),var(--yellow2))}
+.memory-accent.daycare{background:linear-gradient(90deg,var(--yellow2),var(--mint2))}
+.memory-accent.growth{background:linear-gradient(90deg,var(--lavender2),var(--pink2))}
+.memory-body{padding:14px 16px}
+.memory-type{font-size:10px;font-weight:800;letter-spacing:1px;text-transform:uppercase;color:var(--ink3);margin-bottom:4px}
+.memory-date{font-size:12px;font-weight:700;color:var(--pink3);margin-bottom:6px}
+.memory-text{font-size:14px;color:var(--ink);line-height:1.65}
+.memory-photos{display:flex;gap:6px;padding:0 12px 12px;overflow-x:auto;scrollbar-width:none}
+.memory-photos::-webkit-scrollbar{display:none}
+.memory-photos img{width:80px;height:70px;border-radius:10px;object-fit:cover;flex-shrink:0;border:2px solid white;box-shadow:0 1px 4px var(--shadow)}
+.memory-tags{display:flex;gap:6px;padding:0 16px 12px;flex-wrap:wrap}
+.memory-tag{font-size:11px;padding:3px 10px;border-radius:20px;font-weight:700}
+.memory-tag.mood{background:var(--lavender);color:var(--ink2)}
+.memory-tag.weather{background:var(--mint);color:var(--ink2)}
+
+/* MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(58,40,64,0.45);z-index:500;display:none;align-items:flex-end;justify-content:center;backdrop-filter:blur(3px)}
+.modal-overlay.show{display:flex}
+.modal{background:white;border-radius:24px 24px 0 0;width:100%;max-height:85vh;overflow-y:auto;padding:20px 20px 40px;box-shadow:0 -8px 30px var(--shadow2)}
+.modal-handle{width:40px;height:4px;background:var(--lavender2);border-radius:2px;margin:0 auto 16px}
+.modal-title{font-size:18px;font-weight:800;color:var(--ink);margin-bottom:16px;text-align:center}
+.modal-field{margin-bottom:14px}
+.modal-label{font-size:11px;font-weight:800;color:var(--ink3);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:6px;display:block}
+.modal-input{width:100%;background:var(--lavender);border:none;border-radius:12px;padding:12px 14px;font-family:'Nunito',sans-serif;font-size:15px;color:var(--ink);font-weight:600;outline:none}
+.modal-input::placeholder{color:var(--ink3);font-weight:400}
+.modal-textarea{min-height:80px;resize:none}
+.modal-btn{width:100%;padding:14px;border:none;border-radius:50px;background:linear-gradient(135deg,var(--pink3),var(--lavender3));color:white;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(232,154,184,0.45);margin-top:6px}
+.modal-btn-cancel{width:100%;padding:12px;border:none;border-radius:50px;background:var(--lavender);color:var(--ink2);font-family:'Nunito',sans-serif;font-size:15px;font-weight:700;cursor:pointer;margin-top:8px}
+
+/* LOADING + TOAST */
+.loading-overlay{position:fixed;inset:0;background:rgba(253,240,245,0.88);display:none;align-items:center;justify-content:center;z-index:9000;flex-direction:column;gap:14px;backdrop-filter:blur(3px)}
+.loading-overlay.show{display:flex}
+.loading-spinner{width:36px;height:36px;border:3px solid var(--lavender2);border-top-color:var(--pink3);border-radius:50%;animation:spin 0.8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:16px;font-weight:700;color:var(--ink3);font-style:italic}
+.toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--ink);color:white;padding:10px 22px;border-radius:50px;font-size:14px;font-weight:700;z-index:9999;transition:transform 0.3s cubic-bezier(0.34,1.56,0.64,1);box-shadow:0 4px 16px var(--shadow2);white-space:nowrap}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.toast.success{background:var(--mint3)}
+.toast.error{background:#e74c3c}
+
+::-webkit-scrollbar{width:3px;height:3px}::-webkit-scrollbar-track{background:transparent}::-webkit-scrollbar-thumb{background:var(--lavender2);border-radius:2px}
+
+/* PASSWORD SCREEN */
+.lock-screen{position:fixed;inset:0;z-index:9999;display:flex;align-items:center;justify-content:center;flex-direction:column;background:linear-gradient(160deg,var(--pink) 0%,var(--lavender) 50%,var(--mint) 100%);padding:30px}
+.lock-screen.hidden{display:none}
+.lock-stars{font-size:40px;margin-bottom:8px;letter-spacing:4px;animation:twinkle 2s infinite alternate}
+@keyframes twinkle{0%{opacity:0.7;transform:scale(1)}100%{opacity:1;transform:scale(1.05)}}
+.lock-title{font-family:'Quicksand',sans-serif;font-size:28px;font-weight:700;color:var(--ink);margin-bottom:4px;text-align:center}
+.lock-subtitle{font-size:14px;color:var(--ink3);margin-bottom:32px;text-align:center;font-style:italic}
+.lock-card{background:white;border-radius:28px;padding:28px 24px;width:100%;max-width:340px;box-shadow:0 8px 30px var(--shadow2)}
+.lock-label{font-size:11px;font-weight:800;color:var(--ink3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;display:block}
+.lock-input{width:100%;background:var(--lavender);border:2px solid transparent;border-radius:14px;padding:14px 16px;font-family:'Nunito',sans-serif;font-size:18px;color:var(--ink);font-weight:700;outline:none;text-align:center;letter-spacing:4px;transition:border-color 0.2s;margin-bottom:16px}
+.lock-input:focus{border-color:var(--lavender3)}
+.lock-input.shake{animation:shake 0.4s ease}
+@keyframes shake{0%,100%{transform:translateX(0)}20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+.lock-btn{width:100%;padding:14px;border:none;border-radius:50px;background:linear-gradient(135deg,var(--pink3),var(--lavender3));color:white;font-family:'Nunito',sans-serif;font-size:16px;font-weight:800;cursor:pointer;box-shadow:0 4px 14px rgba(232,154,184,0.45);transition:all 0.15s;letter-spacing:0.3px}
+.lock-btn:active{transform:scale(0.97)}
+.lock-error{color:#e74c3c;font-size:13px;font-weight:700;text-align:center;margin-top:10px;min-height:18px}
+.lock-hint{font-size:11px;color:var(--ink3);text-align:center;margin-top:12px;font-style:italic}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD LOCK SCREEN -->
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-stars">🌙 ⭐ 🌸</div>
+  <div class="lock-title">Nadine's Journal</div>
+  <div class="lock-subtitle">our little one's story</div>
+  <div class="lock-card">
+    <label class="lock-label">Enter Password</label>
+    <input class="lock-input" type="password" id="lockInput" placeholder="••••••" onkeydown="if(event.key==='Enter')checkPassword()">
+    <button class="lock-btn" onclick="checkPassword()">🌸 Open Journal</button>
+    <div class="lock-error" id="lockError"></div>
+    <div class="lock-hint">shared password for you & hubby</div>
+  </div>
+</div>
+
+<div class="loading-overlay" id="loadingOverlay"><div class="loading-spinner"></div><div class="loading-text" id="loadingText">loading...</div></div>
+<div class="toast" id="toast"></div>
+
+<!-- ══ TODAY VIEW ══ -->
+<div class="view active" id="todayView">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div>
+        <div class="page-title">🌸 Today<span id="todayDateLabel"></span></div>
+      </div>
+      <button class="header-action-btn" onclick="saveTodayEntry()">Save ✓</button>
+    </div>
+  </div>
+  <div class="cloud-bar"></div>
+
+  <div class="section-pad">
+    <div style="font-size:12px;font-weight:800;color:var(--ink3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">How is Nadine today?</div>
+  </div>
+  <div class="mood-row" id="moodRow">
+    <button class="mood-btn" data-mood="😊 Happy" onclick="selectMood(this)">😊</button>
+    <button class="mood-btn" data-mood="🥰 Loved" onclick="selectMood(this)">🥰</button>
+    <button class="mood-btn" data-mood="😄 Playful" onclick="selectMood(this)">😄</button>
+    <button class="mood-btn" data-mood="😴 Sleepy" onclick="selectMood(this)">😴</button>
+    <button class="mood-btn" data-mood="😢 Fussy" onclick="selectMood(this)">😢</button>
+    <button class="mood-btn" data-mood="🤒 Unwell" onclick="selectMood(this)">🤒</button>
+    <button class="mood-btn" data-mood="🥺 Clingy" onclick="selectMood(this)">🥺</button>
+    <button class="mood-btn" data-mood="🤩 Excited" onclick="selectMood(this)">🤩</button>
+  </div>
+
+  <div style="padding:0 16px;font-size:12px;font-weight:800;color:var(--ink3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Voice Memo</div>
+  <div class="voice-area">
+    <button class="record-btn" id="recordBtn" onclick="toggleRecording()">🎙️</button>
+    <div class="record-status" id="recordStatus">Tap to record Nadine's day</div>
+    <div class="record-hint">tap once to start · tap again to stop</div>
+  </div>
+
+  <div style="padding:0 16px;font-size:12px;font-weight:800;color:var(--ink3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Today's Note</div>
+  <div class="note-area">
+    <textarea id="todayNote" placeholder="What did Nadine do today? Any funny moments, new sounds, cute things..."></textarea>
+  </div>
+
+  <div style="padding:0 16px;font-size:12px;font-weight:800;color:var(--ink3);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px">Photos</div>
+  <div class="photo-grid-wrap" id="todayPhotos">
+    <div class="add-photo-bubble" onclick="document.getElementById('todayPhotoInput').click()">
+      <span class="plus">+</span><span>Add</span>
+    </div>
+  </div>
+  <input type="file" id="todayPhotoInput" accept="image/*" multiple onchange="handleTodayPhoto(event)">
+
+  <div class="save-bar">
+    <button class="save-bar-btn" onclick="saveTodayEntry()">🌸 Save Today's Memory</button>
+  </div>
+</div>
+
+<!-- ══ MILESTONES VIEW ══ -->
+<div class="view" id="milestonesView">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div><div class="page-title">🌟 Milestones<span>Nadine's firsts</span></div></div>
+      <button class="header-action-btn" onclick="showAddMilestoneModal()">+ Add</button>
+    </div>
+  </div>
+  <div class="cloud-bar"></div>
+  <div id="milestonesList" style="padding:8px 0 20px"></div>
+</div>
+
+<!-- ══ GROWTH VIEW ══ -->
+<div class="view" id="growthView">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div><div class="page-title">📏 Growth<span>height & weight</span></div></div>
+    </div>
+  </div>
+  <div class="cloud-bar"></div>
+
+  <div class="growth-form">
+    <div style="font-size:13px;font-weight:800;color:var(--ink2);letter-spacing:0.5px;text-transform:uppercase;margin-bottom:12px">Log Measurement</div>
+    <div class="growth-row">
+      <div class="growth-field">
+        <label class="growth-label">Date</label>
+        <input class="growth-input" type="date" id="growthDate">
+      </div>
+    </div>
+    <div class="growth-row">
+      <div class="growth-field">
+        <label class="growth-label">Height (cm)</label>
+        <input class="growth-input" type="number" id="growthHeight" placeholder="e.g. 62.5" step="0.1">
+      </div>
+      <div class="growth-field">
+        <label class="growth-label">Weight (kg)</label>
+        <input class="growth-input" type="number" id="growthWeight" placeholder="e.g. 6.2" step="0.1">
+      </div>
+    </div>
+    <input class="growth-input" type="text" id="growthNotes" placeholder="Any notes... (optional)" style="width:100%;margin-bottom:12px">
+    <button class="save-bar-btn" onclick="saveGrowth()">📏 Save Measurement</button>
+  </div>
+
+  <div class="chart-wrap">
+    <div class="chart-title">Growth Chart</div>
+    <div class="chart-tabs">
+      <button class="chart-tab active" onclick="switchChart('weight',this)">Weight</button>
+      <button class="chart-tab" onclick="switchChart('height',this)">Height</button>
+    </div>
+    <canvas id="growthChart" height="180"></canvas>
+  </div>
+
+  <div style="padding:4px 16px 8px;font-size:11px;font-weight:800;color:var(--ink3);letter-spacing:1px;text-transform:uppercase">History</div>
+  <div id="growthLog" style="padding-bottom:20px"></div>
+</div>
+
+<!-- ══ DAYCARE VIEW ══ -->
+<div class="view" id="daycareView">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div><div class="page-title">🏫 Daycare<span>activities & photos</span></div></div>
+      <button class="header-action-btn" onclick="showDaycareModal()">+ Add</button>
+    </div>
+  </div>
+  <div class="cloud-bar"></div>
+  <div id="daycareList" style="padding:8px 0 20px"></div>
+</div>
+
+<!-- ══ MEMORY VIEW ══ -->
+<div class="view" id="memoryView">
+  <div class="page-header">
+    <div class="page-header-inner">
+      <div><div class="page-title">📖 Memories<span>Nadine's story</span></div></div>
+    </div>
+  </div>
+  <div class="cloud-bar"></div>
+  <div id="memoryFeed" style="padding:8px 0 20px"></div>
+</div>
+
+<!-- TAB BAR -->
+<div class="tab-bar">
+  <button class="tab-item active" onclick="switchTab('todayView',this)">
+    <span class="tab-icon">🌸</span><span class="tab-label">Today</span>
+  </button>
+  <button class="tab-item" onclick="switchTab('milestonesView',this)">
+    <span class="tab-icon">🌟</span><span class="tab-label">Milestones</span>
+  </button>
+  <button class="tab-item" onclick="switchTab('growthView',this)">
+    <span class="tab-icon">📏</span><span class="tab-label">Growth</span>
+  </button>
+  <button class="tab-item" onclick="switchTab('daycareView',this)">
+    <span class="tab-icon">🏫</span><span class="tab-label">Daycare</span>
+  </button>
+  <button class="tab-item" onclick="switchTab('memoryView',this)">
+    <span class="tab-icon">📖</span><span class="tab-label">Memories</span>
+  </button>
+</div>
+
+<!-- MILESTONE MODAL -->
+<div class="modal-overlay" id="milestoneModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">✨ Add Milestone</div>
+    <div class="modal-field">
+      <label class="modal-label">Milestone</label>
+      <input class="modal-input" type="text" id="milestoneTitle" placeholder="e.g. Said Mama for the first time">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Age Group</label>
+      <select class="modal-input" id="milestoneAge">
+        <option value="0-3 months">0–3 months</option>
+        <option value="3-6 months">3–6 months</option>
+        <option value="6-9 months">6–9 months</option>
+        <option value="9-12 months">9–12 months</option>
+        <option value="12-18 months">12–18 months</option>
+        <option value="18-24 months">18–24 months</option>
+        <option value="Custom">Custom</option>
+      </select>
+    </div>
+    <button class="modal-btn" onclick="saveMilestone()">🌟 Save Milestone</button>
+    <button class="modal-btn-cancel" onclick="closeMilestoneModal()">Cancel</button>
+  </div>
+</div>
+
+<!-- DAYCARE MODAL -->
+<div class="modal-overlay" id="daycareModal">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <div class="modal-title">🏫 Add Daycare Entry</div>
+    <div class="modal-field">
+      <label class="modal-label">Date</label>
+      <input class="modal-input" type="date" id="daycareDate">
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">What did she do today?</label>
+      <textarea class="modal-input modal-textarea" id="daycareNote" placeholder="Painted, sang songs, made new friends..."></textarea>
+    </div>
+    <div class="modal-field">
+      <label class="modal-label">Photos</label>
+      <div class="photo-grid-wrap" id="daycarePhotos" style="padding:0">
+        <div class="add-photo-bubble" onclick="document.getElementById('daycarePhotoInput').click()">
+          <span class="plus">+</span><span>Add</span>
+        </div>
+      </div>
+      <input type="file" id="daycarePhotoInput" accept="image/*" multiple onchange="handleDaycarePhoto(event)">
+    </div>
+    <button class="modal-btn" onclick="saveDaycareEntry()">🏫 Save Entry</button>
+    <button class="modal-btn-cancel" onclick="closeDaycareModal()">Cancel</button>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE ──
+const SB_URL='https://uwgotfnwnbgqnwvumvxn.supabase.co';
+const SB_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InV3Z290Zm53bmJncW53dnVtdnhuIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5OTQwMzEsImV4cCI6MjA5MjU3MDAzMX0.SL6B4EN8Q32MXmdVySDGlPq7B-zFWPeGyWY15I73VNU';
+const H={'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':'application/json'};
+const sb={
+  async q(t,o={}){
+    let u=`${SB_URL}/rest/v1/${t}`;const p=[];
+    if(o.select)p.push(`select=${o.select}`);
+    if(o.order)p.push(`order=${o.order}`);
+    if(o.eq)Object.entries(o.eq).forEach(([k,v])=>p.push(`${k}=eq.${v}`));
+    if(o.limit)p.push(`limit=${o.limit}`);
+    if(p.length)u+='?'+p.join('&');
+    return(await fetch(u,{headers:H})).json();
+  },
+  async ins(t,d){return(await fetch(`${SB_URL}/rest/v1/${t}`,{method:'POST',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify(d)})).json()},
+  async upd(t,id,d){return(await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'PATCH',headers:{...H,'Prefer':'return=representation'},body:JSON.stringify(d)})).json()},
+  async del(t,id){return(await fetch(`${SB_URL}/rest/v1/${t}?id=eq.${id}`,{method:'DELETE',headers:H})).ok},
+  async up(file,path){
+    const r=await fetch(`${SB_URL}/storage/v1/object/journal-photos/baby_${path}`,{method:'POST',headers:{'apikey':SB_KEY,'Authorization':`Bearer ${SB_KEY}`,'Content-Type':file.type},body:file});
+    return r.ok?`${SB_URL}/storage/v1/object/public/journal-photos/baby_${path}`:null;
+  }
+};
+
+// ── STATE ──
+let selectedMoodVal='',recognition=null,isRecording=false,finalTranscript='';
+let todayPhotos=[],daycarePhotosArr=[];
+let growthData=[],activeChart='weight',chartInstance=null;
+
+// ── TABS ──
+function switchTab(viewId,btn){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));
+  document.querySelectorAll('.tab-item').forEach(b=>b.classList.remove('active'));
+  document.getElementById(viewId).classList.add('active');
+  btn.classList.add('active');
+  window.scrollTo(0,0);
+  if(viewId==='milestonesView')loadMilestones();
+  if(viewId==='growthView')loadGrowth();
+  if(viewId==='daycareView')loadDaycare();
+  if(viewId==='memoryView')loadMemories();
+}
+
+// ── TODAY ──
+function initToday(){
+  const now=new Date();
+  document.getElementById('todayDateLabel').textContent=now.toLocaleDateString('en-MY',{weekday:'long',day:'numeric',month:'long'});
+}
+function selectMood(btn){
+  document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+  btn.classList.add('selected');selectedMoodVal=btn.dataset.mood;
+}
+
+// ── VOICE ──
+function startRecording(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){showToast('Voice not supported. Type instead.','error');return}
+  recognition=new SR();recognition.continuous=false;recognition.interimResults=false;recognition.lang='en-US';
+  recognition.onresult=(e)=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)finalTranscript+=e.results[i][0].transcript+' ';}document.getElementById('todayNote').value=finalTranscript.trim()};
+  recognition.onerror=(e)=>{if(e.error==='no-speech'){if(isRecording)restartRec()}else if(e.error!=='aborted'){showToast('Mic error','error');stopRecording()}};
+  recognition.onend=()=>{if(isRecording)restartRec()};
+  try{recognition.start();isRecording=true;document.getElementById('recordBtn').classList.add('recording');document.getElementById('recordBtn').textContent='⏹️';document.getElementById('recordStatus').textContent='Recording...';document.getElementById('recordStatus').classList.add('active')}
+  catch(e){showToast('Could not start recording','error')}
+}
+function restartRec(){
+  if(!isRecording)return;
+  try{
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+    recognition=new SR();recognition.continuous=false;recognition.interimResults=false;recognition.lang='en-US';
+    recognition.onresult=(e)=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)finalTranscript+=e.results[i][0].transcript+' ';}document.getElementById('todayNote').value=finalTranscript.trim()};
+    recognition.onerror=(e)=>{if(e.error!=='aborted'&&e.error!=='no-speech')stopRecording()};
+    recognition.onend=()=>{if(isRecording)restartRec()};
+    recognition.start();
+  }catch(e){}
+}
+function toggleRecording(){isRecording?stopRecording():startRecording()}
+function stopRecording(){
+  isRecording=false;if(recognition){try{recognition.stop()}catch(e){}recognition=null}
+  document.getElementById('recordBtn').classList.remove('recording');document.getElementById('recordBtn').textContent='🎙️';
+  document.getElementById('recordStatus').textContent='Tap to record Nadine\'s day';document.getElementById('recordStatus').classList.remove('active');
+}
+
+// ── TODAY PHOTOS ──
+function handleTodayPhoto(e){
+  Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=(ev)=>{todayPhotos.push({file:f,preview:ev.target.result});renderTodayPhotos()};r.readAsDataURL(f)});e.target.value='';
+}
+function renderTodayPhotos(){
+  const g=document.getElementById('todayPhotos');g.innerHTML='';
+  todayPhotos.forEach((p,i)=>{const d=document.createElement('div');d.className='photo-bubble';d.innerHTML=`<img src="${p.preview}"><button class="rm" onclick="todayPhotos.splice(${i},1);renderTodayPhotos()">✕</button>`;g.appendChild(d)});
+  const a=document.createElement('div');a.className='add-photo-bubble';a.innerHTML='<span class="plus">+</span><span>Add</span>';a.onclick=()=>document.getElementById('todayPhotoInput').click();g.appendChild(a);
+}
+
+// ── SAVE TODAY ──
+async function saveTodayEntry(){
+  const note=document.getElementById('todayNote').value.trim();
+  if(!note&&todayPhotos.length===0){showToast('Add a note or photo first','error');return}
+  stopRecording();showLoading('saving...');
+  try{
+    const urls=[];
+    for(const p of todayPhotos){const url=await sb.up(p.file,`today_${Date.now()}_${Math.random().toString(36).substr(2,6)}.${p.file.name.split('.').pop()}`);if(url)urls.push(url)}
+    const res=await sb.ins('baby_entries',{entry_date:new Date().toISOString().split('T')[0],note:note||null,mood:selectedMoodVal||null,photo_urls:urls.length?JSON.stringify(urls):null,created_at:new Date().toISOString()});
+    if(res&&!res.error&&res.length>0){
+      hideLoading();showToast('Memory saved! 🌸','success');
+      document.getElementById('todayNote').value='';finalTranscript='';selectedMoodVal='';todayPhotos=[];
+      document.querySelectorAll('.mood-btn').forEach(b=>b.classList.remove('selected'));
+      renderTodayPhotos();
+    }else throw new Error(res?.error?.message||'failed');
+  }catch(err){hideLoading();console.error(err);showToast('Could not save','error')}
+}
+
+// ── MILESTONES ──
+const DEFAULT_MILESTONES=[
+  {title:'First smile 😊',age:'0-3 months'},{title:'Holds head up 💪',age:'0-3 months'},{title:'Tracks objects with eyes 👀',age:'0-3 months'},
+  {title:'First laugh 😄',age:'3-6 months'},{title:'Rolls over 🌀',age:'3-6 months'},{title:'Recognises your face 🥰',age:'3-6 months'},
+  {title:'Sits without support 🧸',age:'6-9 months'},{title:'First tooth 🦷',age:'6-9 months'},{title:'Babbles mama/dada 💬',age:'6-9 months'},
+  {title:'Waves bye-bye 👋',age:'9-12 months'},{title:'Stands holding on 🙆',age:'9-12 months'},{title:'First word 🗣️',age:'9-12 months'},
+  {title:'First steps 👣',age:'12-18 months'},{title:'Stacks blocks 🧱',age:'12-18 months'},{title:'Says 10+ words 💬',age:'12-18 months'},
+  {title:'Runs! 🏃',age:'18-24 months'},{title:'Two-word sentences 🗨️',age:'18-24 months'},{title:'Feeds herself 🥄',age:'18-24 months'},
+];
+
+async function loadMilestones(){
+  const list=document.getElementById('milestonesList');
+  list.innerHTML='<div style="text-align:center;padding:30px"><div class="loading-spinner" style="margin:0 auto"></div></div>';
+  try{
+    let existing=await sb.q('baby_milestones',{select:'*',order:'age_group.asc,created_at.asc'});
+    if(!existing||existing.error)existing=[];
+    // Seed defaults if empty
+    if(existing.length===0){
+      for(const m of DEFAULT_MILESTONES){await sb.ins('baby_milestones',{title:m.title,age_group:m.age,achieved:false,is_custom:false,created_at:new Date().toISOString()})}
+      existing=await sb.q('baby_milestones',{select:'*',order:'age_group.asc,created_at.asc'});
+    }
+    const groups={};
+    existing.forEach(m=>{const g=m.age_group||'Custom';if(!groups[g])groups[g]=[];groups[g].push(m)});
+    list.innerHTML='';
+    Object.entries(groups).forEach(([group,items])=>{
+      const gl=document.createElement('div');gl.className='milestone-group-label';gl.textContent=group;list.appendChild(gl);
+      items.forEach(m=>{
+        const d=document.createElement('div');d.className='milestone-item'+(m.achieved?' done':'');
+        d.innerHTML=`<div class="milestone-check">${m.achieved?'✓':''}</div><div class="milestone-info"><div class="milestone-title">${m.title}</div>${m.achieved_date?`<div class="milestone-date">✦ ${formatDate(m.achieved_date)}</div>`:''}</div>${m.photo_url?'<span class="milestone-photo-badge">📸</span>':''}`;
+        d.onclick=()=>toggleMilestone(m);list.appendChild(d);
+      });
+    });
+  }catch(e){list.innerHTML='<div style="text-align:center;padding:30px;color:var(--ink3)">Could not load milestones</div>'}
+}
+
+async function toggleMilestone(m){
+  if(m.achieved)return;
+  showLoading('marking milestone...');
+  await sb.upd('baby_milestones',m.id,{achieved:true,achieved_date:new Date().toISOString().split('T')[0]});
+  hideLoading();showToast('🌟 Milestone achieved!','success');loadMilestones();
+}
+
+function showAddMilestoneModal(){document.getElementById('milestoneModal').classList.add('show')}
+function closeMilestoneModal(){document.getElementById('milestoneModal').classList.remove('show')}
+async function saveMilestone(){
+  const title=document.getElementById('milestoneTitle').value.trim();
+  const age=document.getElementById('milestoneAge').value;
+  if(!title){showToast('Enter a milestone','error');return}
+  showLoading('saving...');
+  await sb.ins('baby_milestones',{title,age_group:age,achieved:false,is_custom:true,created_at:new Date().toISOString()});
+  hideLoading();closeMilestoneModal();showToast('Milestone added! ✨','success');
+  document.getElementById('milestoneTitle').value='';loadMilestones();
+}
+
+// ── GROWTH ──
+async function saveGrowth(){
+  const date=document.getElementById('growthDate').value;
+  const h=parseFloat(document.getElementById('growthHeight').value);
+  const w=parseFloat(document.getElementById('growthWeight').value);
+  const notes=document.getElementById('growthNotes').value.trim();
+  if(!date||(isNaN(h)&&isNaN(w))){showToast('Enter date and at least one measurement','error');return}
+  showLoading('saving...');
+  await sb.ins('baby_growth',{measured_date:date,height_cm:isNaN(h)?null:h,weight_kg:isNaN(w)?null:w,notes:notes||null,created_at:new Date().toISOString()});
+  hideLoading();showToast('Growth saved 📏','success');
+  document.getElementById('growthHeight').value='';document.getElementById('growthWeight').value='';document.getElementById('growthNotes').value='';
+  loadGrowth();
+}
+
+async function loadGrowth(){
+  const log=document.getElementById('growthLog');
+  log.innerHTML='<div style="text-align:center;padding:20px"><div class="loading-spinner" style="margin:0 auto"></div></div>';
+  try{
+    const data=await sb.q('baby_growth',{select:'*',order:'measured_date.asc'});
+    growthData=data||[];
+    renderGrowthChart();
+    if(growthData.length===0){log.innerHTML='<div style="text-align:center;padding:20px;color:var(--ink3);font-style:italic">No measurements yet</div>';return}
+    log.innerHTML=[...growthData].reverse().map(g=>`
+      <div class="growth-log-item">
+        <span class="growth-icon">👶</span>
+        <div class="growth-info">
+          <div class="growth-date">${formatDate(g.measured_date)}</div>
+          <div class="growth-vals">
+            ${g.height_cm?`<span>Height</span> ${g.height_cm} cm  `:''}
+            ${g.weight_kg?`<span>Weight</span> ${g.weight_kg} kg`:''}
+          </div>
+          ${g.notes?`<div style="font-size:12px;color:var(--ink3);margin-top:3px;font-style:italic">${g.notes}</div>`:''}
+        </div>
+      </div>`).join('');
+  }catch(e){log.innerHTML='<div style="text-align:center;padding:20px;color:var(--ink3)">Could not load growth data</div>'}
+}
+
+function switchChart(type,btn){
+  activeChart=type;
+  document.querySelectorAll('.chart-tab').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');renderGrowthChart();
+}
+
+function renderGrowthChart(){
+  const canvas=document.getElementById('growthChart');
+  const ctx=canvas.getContext('2d');
+  const W=canvas.offsetWidth||300;canvas.width=W;canvas.height=180;
+  ctx.clearRect(0,0,W,180);
+  const filtered=growthData.filter(g=>activeChart==='weight'?g.weight_kg!=null:g.height_cm!=null);
+  if(filtered.length<2){
+    ctx.fillStyle='#b8a8e0';ctx.font='14px Nunito,sans-serif';ctx.textAlign='center';
+    ctx.fillText('Add at least 2 measurements to see chart',W/2,90);return;
+  }
+  const vals=filtered.map(g=>activeChart==='weight'?g.weight_kg:g.height_cm);
+  const labels=filtered.map(g=>g.measured_date.substring(5));
+  const min=Math.min(...vals)*0.95,max=Math.max(...vals)*1.05;
+  const pad={t:20,r:20,b:30,l:40};
+  const cW=W-pad.l-pad.r,cH=180-pad.t-pad.b;
+  // Grid lines
+  ctx.strokeStyle='rgba(184,168,224,0.3)';ctx.lineWidth=1;
+  for(let i=0;i<=4;i++){const y=pad.t+cH*(1-i/4);ctx.beginPath();ctx.moveTo(pad.l,y);ctx.lineTo(pad.l+cW,y);ctx.stroke()}
+  // Line
+  ctx.beginPath();ctx.strokeStyle='#e89ab8';ctx.lineWidth=2.5;ctx.lineJoin='round';
+  filtered.forEach((g,i)=>{
+    const x=pad.l+i/(filtered.length-1)*cW;
+    const y=pad.t+cH*(1-(vals[i]-min)/(max-min));
+    i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+  });ctx.stroke();
+  // Fill under line
+  ctx.beginPath();
+  filtered.forEach((g,i)=>{const x=pad.l+i/(filtered.length-1)*cW;const y=pad.t+cH*(1-(vals[i]-min)/(max-min));i===0?ctx.moveTo(x,y):ctx.lineTo(x,y)});
+  ctx.lineTo(pad.l+cW,pad.t+cH);ctx.lineTo(pad.l,pad.t+cH);ctx.closePath();
+  const grad=ctx.createLinearGradient(0,pad.t,0,pad.t+cH);grad.addColorStop(0,'rgba(232,154,184,0.25)');grad.addColorStop(1,'rgba(232,154,184,0)');
+  ctx.fillStyle=grad;ctx.fill();
+  // Dots + labels
+  filtered.forEach((g,i)=>{
+    const x=pad.l+i/(filtered.length-1)*cW;const y=pad.t+cH*(1-(vals[i]-min)/(max-min));
+    ctx.beginPath();ctx.arc(x,y,4,0,Math.PI*2);ctx.fillStyle='white';ctx.fill();ctx.strokeStyle='#e89ab8';ctx.lineWidth=2;ctx.stroke();
+    if(i===0||i===filtered.length-1||filtered.length<=5){ctx.fillStyle='#6b4f6e';ctx.font='10px Nunito,sans-serif';ctx.textAlign='center';ctx.fillText(labels[i],x,180-8)}
+  });
+  // Y label
+  ctx.fillStyle='#b8a8e0';ctx.font='10px Nunito,sans-serif';ctx.textAlign='right';
+  ctx.fillText(max.toFixed(1),pad.l-4,pad.t+4);ctx.fillText(min.toFixed(1),pad.l-4,pad.t+cH);
+}
+
+// ── DAYCARE ──
+function showDaycareModal(){
+  document.getElementById('daycareDate').value=new Date().toISOString().split('T')[0];
+  daycarePhotosArr=[];renderDaycarePhotos();
+  document.getElementById('daycareModal').classList.add('show');
+}
+function closeDaycareModal(){document.getElementById('daycareModal').classList.remove('show')}
+
+function handleDaycarePhoto(e){
+  Array.from(e.target.files).forEach(f=>{const r=new FileReader();r.onload=(ev)=>{daycarePhotosArr.push({file:f,preview:ev.target.result});renderDaycarePhotos()};r.readAsDataURL(f)});e.target.value='';
+}
+function renderDaycarePhotos(){
+  const g=document.getElementById('daycarePhotos');g.innerHTML='';
+  daycarePhotosArr.forEach((p,i)=>{const d=document.createElement('div');d.className='photo-bubble';d.innerHTML=`<img src="${p.preview}"><button class="rm" onclick="daycarePhotosArr.splice(${i},1);renderDaycarePhotos()">✕</button>`;g.appendChild(d)});
+  const a=document.createElement('div');a.className='add-photo-bubble';a.innerHTML='<span class="plus">+</span><span>Add</span>';a.onclick=()=>document.getElementById('daycarePhotoInput').click();g.appendChild(a);
+}
+async function saveDaycareEntry(){
+  const date=document.getElementById('daycareDate').value;
+  const note=document.getElementById('daycareNote').value.trim();
+  if(!date){showToast('Pick a date','error');return}
+  showLoading('saving...');
+  try{
+    const urls=[];
+    for(const p of daycarePhotosArr){const url=await sb.up(p.file,`daycare_${Date.now()}_${Math.random().toString(36).substr(2,6)}.${p.file.name.split('.').pop()}`);if(url)urls.push(url)}
+    await sb.ins('baby_daycare',{entry_date:date,note:note||null,photo_urls:urls.length?JSON.stringify(urls):null,created_at:new Date().toISOString()});
+    hideLoading();closeDaycareModal();showToast('Daycare entry saved 🏫','success');
+    document.getElementById('daycareNote').value='';daycarePhotosArr=[];loadDaycare();
+  }catch(e){hideLoading();showToast('Could not save','error')}
+}
+async function loadDaycare(){
+  const list=document.getElementById('daycareList');
+  list.innerHTML='<div style="text-align:center;padding:30px"><div class="loading-spinner" style="margin:0 auto"></div></div>';
+  try{
+    const data=await sb.q('baby_daycare',{select:'*',order:'entry_date.desc'});
+    if(!data||data.length===0){list.innerHTML='<div style="text-align:center;padding:40px;color:var(--ink3);font-style:italic">No daycare entries yet</div>';return}
+    list.innerHTML=data.map(d=>{
+      const photos=d.photo_urls?JSON.parse(d.photo_urls):[];
+      return`<div class="daycare-card">
+        <div class="daycare-card-header">
+          <span class="daycare-date">🏫 ${formatDate(d.entry_date)}</span>
+        </div>
+        ${photos.length?`<div class="daycare-photos">${photos.map(u=>`<img class="daycare-photo" src="${u}" loading="lazy">`).join('')}</div>`:''}
+        ${d.note?`<div class="daycare-note">"${d.note}"</div>`:''}
+      </div>`;
+    }).join('');
+  }catch(e){list.innerHTML='<div style="text-align:center;padding:30px;color:var(--ink3)">Could not load</div>'}
+}
+
+// ── MEMORIES ──
+async function loadMemories(){
+  const feed=document.getElementById('memoryFeed');
+  feed.innerHTML='<div style="text-align:center;padding:30px"><div class="loading-spinner" style="margin:0 auto"></div></div>';
+  try{
+    const [entries,milestones,daycare,growth]=await Promise.all([
+      sb.q('baby_entries',{select:'*',order:'entry_date.desc',limit:30}),
+      sb.q('baby_milestones',{select:'*',eq:{achieved:'true'},order:'achieved_date.desc',limit:20}),
+      sb.q('baby_daycare',{select:'*',order:'entry_date.desc',limit:20}),
+      sb.q('baby_growth',{select:'*',order:'measured_date.desc',limit:20}),
+    ]);
+    let all=[];
+    (entries||[]).forEach(e=>all.push({type:'today',date:e.entry_date,data:e}));
+    (milestones||[]).forEach(e=>all.push({type:'milestone',date:e.achieved_date,data:e}));
+    (daycare||[]).forEach(e=>all.push({type:'daycare',date:e.entry_date,data:e}));
+    (growth||[]).forEach(e=>all.push({type:'growth',date:e.measured_date,data:e}));
+    all.sort((a,b)=>new Date(b.date)-new Date(a.date));
+    if(all.length===0){feed.innerHTML='<div style="text-align:center;padding:50px;color:var(--ink3);font-style:italic">Your memories will appear here 🌸</div>';return}
+    feed.innerHTML=all.map(item=>{
+      if(item.type==='today'){
+        const photos=item.data.photo_urls?JSON.parse(item.data.photo_urls):[];
+        return`<div class="memory-item"><div class="memory-accent today"></div><div class="memory-body">
+          <div class="memory-type">🌸 Daily Memory</div>
+          <div class="memory-date">${formatDate(item.date)}</div>
+          ${item.data.note?`<div class="memory-text">${item.data.note}</div>`:''}
+        </div>
+        ${photos.length?`<div class="memory-photos">${photos.map(u=>`<img src="${u}" loading="lazy">`).join('')}</div>`:''}
+        <div class="memory-tags">
+          ${item.data.mood?`<span class="memory-tag mood">${item.data.mood}</span>`:''}
+        </div></div>`;
+      }
+      if(item.type==='milestone'){
+        return`<div class="memory-item"><div class="memory-accent milestone"></div><div class="memory-body">
+          <div class="memory-type">🌟 Milestone</div>
+          <div class="memory-date">${formatDate(item.date)}</div>
+          <div class="memory-text">${item.data.title}</div>
+        </div></div>`;
+      }
+      if(item.type==='daycare'){
+        const photos=item.data.photo_urls?JSON.parse(item.data.photo_urls):[];
+        return`<div class="memory-item"><div class="memory-accent daycare"></div><div class="memory-body">
+          <div class="memory-type">🏫 Daycare</div>
+          <div class="memory-date">${formatDate(item.date)}</div>
+          ${item.data.note?`<div class="memory-text">${item.data.note}</div>`:''}
+        </div>
+        ${photos.length?`<div class="memory-photos">${photos.map(u=>`<img src="${u}" loading="lazy">`).join('')}</div>`:''}
+        </div>`;
+      }
+      if(item.type==='growth'){
+        return`<div class="memory-item"><div class="memory-accent growth"></div><div class="memory-body">
+          <div class="memory-type">📏 Growth</div>
+          <div class="memory-date">${formatDate(item.date)}</div>
+          <div class="memory-text">${item.data.height_cm?`Height: ${item.data.height_cm} cm  `:''}${item.data.weight_kg?`Weight: ${item.data.weight_kg} kg`:''}</div>
+        </div></div>`;
+      }
+    }).join('');
+  }catch(e){feed.innerHTML='<div style="text-align:center;padding:30px;color:var(--ink3)">Could not load memories</div>'}
+}
+
+// ── HELPERS ──
+function formatDate(d){if(!d)return'';return new Date(d+'T00:00:00').toLocaleDateString('en-MY',{day:'numeric',month:'short',year:'numeric'})}
+function showLoading(msg='loading...'){document.getElementById('loadingText').textContent=msg;document.getElementById('loadingOverlay').classList.add('show')}
+function hideLoading(){document.getElementById('loadingOverlay').classList.remove('show')}
+let _tt;
+function showToast(msg,type=''){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show '+type;clearTimeout(_tt);_tt=setTimeout(()=>t.classList.remove('show'),3000)}
+
+// ── PASSWORD ──
+const APP_PASSWORD = 'nadine2025';  // ← CHANGE THIS to your own password
+
+function checkPassword(){
+  const input = document.getElementById('lockInput').value;
+  const err = document.getElementById('lockError');
+  if(input === APP_PASSWORD){
+    document.getElementById('lockScreen').classList.add('hidden');
+    sessionStorage.setItem('nadine_auth','1');
+    initToday();
+    document.getElementById('growthDate').value=new Date().toISOString().split('T')[0];
+  } else {
+    err.textContent = 'Wrong password, try again 🙈';
+    const inp = document.getElementById('lockInput');
+    inp.classList.add('shake');
+    inp.value='';
+    setTimeout(()=>inp.classList.remove('shake'),400);
+  }
+}
+
+// ── INIT ──
+if(sessionStorage.getItem('nadine_auth')==='1'){
+  document.getElementById('lockScreen').classList.add('hidden');
+  } else {
+  // show lock screen, focus input
+  setTimeout(()=>document.getElementById('lockInput').focus(),300);
+}
+document.getElementById('growthDate').value=new Date().toISOString().split('T')[0];
+window.addEventListener('resize',()=>{if(document.getElementById('growthView').classList.contains('active'))renderGrowthChart()});
+</script>
+</body>
+</html>
